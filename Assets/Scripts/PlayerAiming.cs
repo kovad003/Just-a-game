@@ -12,6 +12,7 @@ public class PlayerAiming : MonoBehaviour
     {
         _mainCamera = Camera.main;
         Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
     
     // FixedUpdate() must be used bc player has physics and rigidbody.
