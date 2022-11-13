@@ -571,7 +571,7 @@ Transform:
   m_Children:
   - {fileID: 1163936449}
   m_Father: {fileID: 3140342174794492484}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &232723143
 MonoBehaviour:
@@ -2657,7 +2657,7 @@ Transform:
   m_Children:
   - {fileID: 14393831}
   m_Father: {fileID: 3140342174794492484}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1158956856
 GameObject:
@@ -2840,7 +2840,7 @@ MonoBehaviour:
       m_Item7:
         transform: {fileID: 0}
         weight: 0
-    m_Offset: {x: 0, y: 0, z: 0.38}
+    m_Offset: {x: -0.09, y: 0, z: 0.3}
     m_ConstrainedAxes:
       x: 1
       y: 1
@@ -2926,7 +2926,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1358298573}
   m_LocalRotation: {x: -0.14402615, y: 0.7521911, z: 0.6339131, w: -0.10779235}
-  m_LocalPosition: {x: 0.055, y: -0.046, z: -0.088}
+  m_LocalPosition: {x: 0.0392, y: 0.0574, z: -0.0679}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3182,14 +3182,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1650641911}
-  m_LocalRotation: {x: 0.064900756, y: -0.73630023, z: -0.6716631, w: -0.0501857}
-  m_LocalPosition: {x: -0.008, y: -0.026, z: -0.056}
+  m_LocalRotation: {x: -0.16420197, y: -0.7299615, z: -0.649148, w: 0.13711587}
+  m_LocalPosition: {x: -0.0711, y: 0.0211, z: -0.0524}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 14393831}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: -84.627, y: -171.848, z: -17.498}
+  m_LocalEulerAnglesHint: {x: -83.09, y: -186.205, z: 30.854}
 --- !u!1 &1851422781
 GameObject:
   m_ObjectHideFlags: 0
@@ -3236,7 +3236,7 @@ Transform:
   - {fileID: 1158956857}
   - {fileID: 1279819460}
   m_Father: {fileID: 3140342174794492484}
-  m_RootOrder: 2
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &1865248475
 Mesh:
@@ -6669,9 +6669,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1851422783}
   - {fileID: 232723142}
   - {fileID: 1135038076}
-  - {fileID: 1851422783}
   - {fileID: 1390245037}
   - {fileID: 3110278988017390639}
   - {fileID: 5511462798914348163}
@@ -6773,6 +6773,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RigLayers:
   - m_Rig: {fileID: 232723143}
+    m_Active: 1
+  - m_Rig: {fileID: 0}
     m_Active: 1
   - m_Rig: {fileID: 1851422782}
     m_Active: 1
