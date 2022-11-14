@@ -12,8 +12,6 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private Rig aimLayer;
     [SerializeField] private GameObject rigLayers;
     [SerializeField] private GameObject holsteredPistol;
-    [SerializeField] private LayerMask layerMask;
-    private Rigidbody _playerRb;
     private Camera _mainCamera;
     private Transform _aimingRef;
     private RigBuilder _rigBuilder;
@@ -21,7 +19,7 @@ public class PlayerAiming : MonoBehaviour
     private float _timeOfLastShot;
     private bool _isAiming = false;
 
-    /* Animator Param References */
+    /* Animator Param References: */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int HolsterPistol = Animator.StringToHash("HolsterPistol");
     private static readonly int UnholsterPistol = Animator.StringToHash("UnholsterPistol");
@@ -38,7 +36,6 @@ public class PlayerAiming : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         // Binding Components:
-        _playerRb = GetComponent<Rigidbody>();
         _rigBuilder = GetComponent<RigBuilder>();
         _animator = GetComponent<Animator>();
         
@@ -55,7 +52,6 @@ public class PlayerAiming : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
-        SampleGround();
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1));
         StartCoroutine(Shoot(Input.GetMouseButtonDown(0), 
@@ -158,21 +154,5 @@ public class PlayerAiming : MonoBehaviour
     {
         vector.y -= y;
         return vector;
-    }
-
-    private void SampleGround()
-    {
-        RaycastHit hitInfo;
-        float maxRange = 1.1f;
-        if (Physics.Raycast(_playerRb.worldCenterOfMass, 
-                Vector3.down, out hitInfo, maxRange, layerMask))
-        {
-            Debug.Log("You are grounded!");
-        }
-        else
-        {
-            Debug.Log("You are falling!");
-        }
-
     }
 }
