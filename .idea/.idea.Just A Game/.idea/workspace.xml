@@ -9,7 +9,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/DisableThis.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/EnemyAI.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/EnemyAI.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/PlayerAiming.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -71,7 +71,7 @@
       <workItem from="1668338506328" duration="708000" />
       <workItem from="1668339234805" duration="25227000" />
       <workItem from="1668413962065" duration="7188000" />
-      <workItem from="1668433958978" duration="15309000" />
+      <workItem from="1668433958978" duration="16530000" />
     </task>
     <servers />
   </component>
