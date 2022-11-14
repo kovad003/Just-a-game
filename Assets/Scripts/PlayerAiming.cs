@@ -16,7 +16,9 @@ public class PlayerAiming : MonoBehaviour
     private Transform _aimingRef;
     private RigBuilder _rigBuilder;
     private Animator _animator;
+    private float _timeOfLastShot; 
 
+    /* Animator Param References */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int HolsterPistol = Animator.StringToHash("HolsterPistol");
     private static readonly int UnholsterPistol = Animator.StringToHash("UnholsterPistol");
@@ -35,6 +37,9 @@ public class PlayerAiming : MonoBehaviour
         // Binding Components:
         _rigBuilder = GetComponent<RigBuilder>();
         _animator = GetComponent<Animator>();
+        
+        // Binding Important Fields:
+        _timeOfLastShot = Time.time;
     }
     
     // FixedUpdate() must be used bc player has physics and rigidbody.
@@ -45,7 +50,7 @@ public class PlayerAiming : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, 
             Quaternion.Euler(0, playerCamera, 0), turnSpeed * Time.fixedDeltaTime );
         
-        Debug.Log("_aimingRef.transform.position = " + _aimingRef.transform.position);
+        // Debug.Log("_aimingRef.transform.position = " + _aimingRef.transform.position);
     }
 
     // Update is enough for scanning user input.
@@ -57,28 +62,36 @@ public class PlayerAiming : MonoBehaviour
         
     }
     /**************************************************************************************************************/
+    // Holding RMB triggers this method. Player can aim at any target after the
+    // the player character assumed aiming position.
     private void MouseAim(bool mouseInput)
     {
+        if (_animator.GetBool(IsPistolHolstered)) return;
         if (mouseInput)
-        {
             aimLayer.weight += Time.deltaTime / aimDuration;
-        }
         else
-        {
             aimLayer.weight -= Time.deltaTime / aimDuration;
-        }
     }
     
-    // 
+    // LMB triggers this method. A timer is checking the elapsed time between shots.
+    // Recoil is generated accordingly.
     IEnumerator Shoot(bool mouseBtnDown)
     {
         if (!mouseBtnDown) yield break;
+
+        var timeOfCurrentShot = Time.time;
+        if (!(_timeOfLastShot + 0.1f <= timeOfCurrentShot)) yield break;
+        
+        _timeOfLastShot = Time.time;
         var aimAt = _aimingRef.transform;
         aimAt.position = RecoilUpward(aimAt.position, 8f * Time.fixedDeltaTime);
         yield return new WaitForSeconds(0.1f);
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
     
+    // The release of the "H" key triggers this method. The executed coroutines will affect
+    // the Rig Builder component by enabling / disabling the attached Rig Layers. This way
+    // the animator will have more control over the movement of the player character.
     private void HolsterGun(KeyCode key)
     {
         if (!Input.GetKeyUp(key)) return;
