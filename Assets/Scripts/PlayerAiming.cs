@@ -53,7 +53,7 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1));
-        Shoot(Input.GetMouseButtonDown(0), Input.GetMouseButtonUp(0));
+        StartCoroutine(Shoot(Input.GetMouseButtonDown(0)));
         
     }
     /**************************************************************************************************************/
@@ -69,13 +69,23 @@ public class PlayerAiming : MonoBehaviour
         }
     }
     
+    // 
+    IEnumerator Shoot(bool mouseBtnDown)
+    {
+        if (!mouseBtnDown) yield break;
+        var aimAt = _aimingRef.transform;
+        aimAt.position = RecoilUpward(aimAt.position, 8f * Time.fixedDeltaTime);
+        yield return new WaitForSeconds(0.1f);
+        aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
+    }
+    
     private void HolsterGun(KeyCode key)
     {
         if (!Input.GetKeyUp(key)) return;
         if (_animator.GetBool(IsPistolHolstered) == false)
         {
             _animator.SetTrigger(HolsterPistol);
-            StartCoroutine(DisableRigBuilder());
+            StartCoroutine(DisableRigLayers());
             rigLayers.SetActive(false);
             holsteredPistol.SetActive(true);
             _animator.SetBool(IsPistolHolstered, true);
@@ -83,38 +93,22 @@ public class PlayerAiming : MonoBehaviour
         else
         {
             _animator.SetTrigger(UnholsterPistol);
-            StartCoroutine(EnableRigBuilder());
+            StartCoroutine(EnableRigLayers());
             holsteredPistol.SetActive(false);
             _animator.SetBool(IsPistolHolstered, false);
         }
     }
 
-    private void Shoot(bool mouseBtnDown, bool mouseBtnUp)
-    {
-        if (mouseBtnDown)
-        {
-            Debug.Log("LMB pressed");
-            _aimingRef.transform.position = IncrementAxisY(_aimingRef.transform.position, 8f * Time.fixedDeltaTime);
-
-        }
-
-        if (mouseBtnUp) // Probably better to make a coroutine here
-        {
-            Debug.Log("LMB released");
-            _aimingRef.transform.position = DecrementAxisY(_aimingRef.transform.position, 8f * Time.fixedDeltaTime);
-        }
-    }
-
     // The delay makes the transition better between animation states!
     // Events weren't working really well bc of the rig layers!
-    IEnumerator EnableRigBuilder()
+    IEnumerator EnableRigLayers()
     {
         yield return new WaitForSeconds(0.6f);
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = true;
         rigLayers.SetActive(true); // This needs to be here so weapon is only spawned when hands are together!
     }
-    IEnumerator DisableRigBuilder()
+    IEnumerator DisableRigLayers()
     {
         yield return new WaitForSeconds(0.1f);
         // The named one will be set to true, the rest will be turned off:
@@ -123,12 +117,12 @@ public class PlayerAiming : MonoBehaviour
     }
     
     // Methods are used to generate weapon recoil when player is shooting.
-    Vector3 IncrementAxisY(Vector3 vector, float y)
+    Vector3 RecoilUpward(Vector3 vector, float y)
     {
         vector.y += y;
         return vector;
     }
-    Vector3 DecrementAxisY(Vector3 vector, float y)
+    Vector3 RecoilDownward(Vector3 vector, float y)
     {
         vector.y -= y;
         return vector;
