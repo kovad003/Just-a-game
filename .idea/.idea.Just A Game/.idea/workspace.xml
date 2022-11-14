@@ -9,6 +9,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/DisableThis.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/HolsterWeapon.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/PlayerAiming.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -68,7 +69,7 @@
       <option name="presentableId" value="Default" />
       <updated>1668338502412</updated>
       <workItem from="1668338506328" duration="708000" />
-      <workItem from="1668339234805" duration="7211000" />
+      <workItem from="1668339234805" duration="19450000" />
     </task>
     <servers />
   </component>
