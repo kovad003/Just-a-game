@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -14,6 +13,7 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private GameObject rigLayers;
     [SerializeField] private GameObject holsteredPistol;
     private Camera _mainCamera;
+    private Transform _aimingRef;
     private RigBuilder _rigBuilder;
     private Animator _animator;
 
@@ -25,10 +25,14 @@ public class PlayerAiming : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Handling Camera:
         _mainCamera = Camera.main;
+        if (_mainCamera != null)
+            _aimingRef = _mainCamera.transform.Find("REF_AimLookAt");
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
+        // Binding Components:
         _rigBuilder = GetComponent<RigBuilder>();
         _animator = GetComponent<Animator>();
     }
@@ -40,6 +44,8 @@ public class PlayerAiming : MonoBehaviour
         // Camera will blend in (on the y-axis) from current rotation towards the camera's rotation.
         transform.rotation = Quaternion.Slerp(transform.rotation, 
             Quaternion.Euler(0, playerCamera, 0), turnSpeed * Time.fixedDeltaTime );
+        
+        Debug.Log("_aimingRef.transform.position = " + _aimingRef.transform.position);
     }
 
     // Update is enough for scanning user input.
@@ -47,6 +53,8 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1));
+        Shoot(Input.GetMouseButtonDown(0), Input.GetMouseButtonUp(0));
+        
     }
     /**************************************************************************************************************/
     private void MouseAim(bool mouseInput)
@@ -81,6 +89,22 @@ public class PlayerAiming : MonoBehaviour
         }
     }
 
+    private void Shoot(bool mouseBtnDown, bool mouseBtnUp)
+    {
+        if (mouseBtnDown)
+        {
+            Debug.Log("LMB pressed");
+            _aimingRef.transform.position = IncrementAxisY(_aimingRef.transform.position, 8f * Time.fixedDeltaTime);
+
+        }
+
+        if (mouseBtnUp) // Probably better to make a coroutine here
+        {
+            Debug.Log("LMB released");
+            _aimingRef.transform.position = DecrementAxisY(_aimingRef.transform.position, 8f * Time.fixedDeltaTime);
+        }
+    }
+
     // The delay makes the transition better between animation states!
     // Events weren't working really well bc of the rig layers!
     IEnumerator EnableRigBuilder()
@@ -96,5 +120,17 @@ public class PlayerAiming : MonoBehaviour
         // The named one will be set to true, the rest will be turned off:
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = i.name == "RigLayerBodyAim";
+    }
+    
+    // Methods are used to generate weapon recoil when player is shooting.
+    Vector3 IncrementAxisY(Vector3 vector, float y)
+    {
+        vector.y += y;
+        return vector;
+    }
+    Vector3 DecrementAxisY(Vector3 vector, float y)
+    {
+        vector.y -= y;
+        return vector;
     }
 }
