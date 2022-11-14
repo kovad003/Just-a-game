@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -15,6 +16,11 @@ public class PlayerAiming : MonoBehaviour
     private Camera _mainCamera;
     private RigBuilder _rigBuilder;
     private Animator _animator;
+
+    private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
+    private static readonly int HolsterPistol = Animator.StringToHash("HolsterPistol");
+    private static readonly int UnholsterPistol = Animator.StringToHash("UnholsterPistol");
+
     /**************************************************************************************************************/
     // Start is called before the first frame update
     void Start()
@@ -57,24 +63,21 @@ public class PlayerAiming : MonoBehaviour
     
     private void HolsterGun(KeyCode key)
     {
-        if (Input.GetKeyUp(key))
+        if (!Input.GetKeyUp(key)) return;
+        if (_animator.GetBool(IsPistolHolstered) == false)
         {
-            if (_rigBuilder.enabled)
-            {
-                // _rigBuilder.enabled = false;
-                StartCoroutine(DisableRigBuilder());
-                rigLayers.SetActive(false);
-                _animator.SetTrigger("HolsterPistol");
-                holsteredPistol.SetActive(true);
-            }
-            else
-            {
-                _animator.SetTrigger("UnholsterPistol");
-                holsteredPistol.SetActive(false);
-                rigLayers.SetActive(true);
-                // _rigBuilder.enabled = true;
-                StartCoroutine(EnableRigBuilder());
-            }
+            _animator.SetTrigger(HolsterPistol);
+            StartCoroutine(DisableRigBuilder());
+            rigLayers.SetActive(false);
+            holsteredPistol.SetActive(true);
+            _animator.SetBool(IsPistolHolstered, true);
+        }
+        else
+        {
+            _animator.SetTrigger(UnholsterPistol);
+            StartCoroutine(EnableRigBuilder());
+            holsteredPistol.SetActive(false);
+            _animator.SetBool(IsPistolHolstered, false);
         }
     }
 
@@ -83,11 +86,15 @@ public class PlayerAiming : MonoBehaviour
     IEnumerator EnableRigBuilder()
     {
         yield return new WaitForSeconds(0.6f);
-        _rigBuilder.enabled = true;
+        foreach (RigLayer i in _rigBuilder.layers)
+            i.active = true;
+        rigLayers.SetActive(true); // This needs to be here so weapon is only spawned when hands are together!
     }
     IEnumerator DisableRigBuilder()
     {
         yield return new WaitForSeconds(0.1f);
-        _rigBuilder.enabled = false;
+        // The named one will be set to true, the rest will be turned off:
+        foreach (RigLayer i in _rigBuilder.layers)
+            i.active = i.name == "RigLayerBodyAim";
     }
 }
