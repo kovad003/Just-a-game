@@ -16,7 +16,8 @@ public class PlayerAiming : MonoBehaviour
     private Transform _aimingRef;
     private RigBuilder _rigBuilder;
     private Animator _animator;
-    private float _timeOfLastShot; 
+    private float _timeOfLastShot;
+    private bool _isAiming = false;
 
     /* Animator Param References */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
@@ -25,7 +26,7 @@ public class PlayerAiming : MonoBehaviour
 
     /**************************************************************************************************************/
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         // Handling Camera:
         _mainCamera = Camera.main;
@@ -43,7 +44,7 @@ public class PlayerAiming : MonoBehaviour
     }
     
     // FixedUpdate() must be used bc player has physics and rigidbody.
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         float playerCamera = _mainCamera.transform.rotation.eulerAngles.y;
         // Camera will blend in (on the y-axis) from current rotation towards the camera's rotation.
@@ -58,7 +59,8 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1));
-        StartCoroutine(Shoot(Input.GetMouseButtonDown(0)));
+        StartCoroutine(Shoot(Input.GetMouseButtonDown(0), 
+            _animator.GetBool(IsPistolHolstered), _isAiming));
         
     }
     /**************************************************************************************************************/
@@ -68,16 +70,25 @@ public class PlayerAiming : MonoBehaviour
     {
         if (_animator.GetBool(IsPistolHolstered)) return;
         if (mouseInput)
+        {
+            _isAiming = true;
             aimLayer.weight += Time.deltaTime / aimDuration;
+        }
+
         else
+        {
+            _isAiming = false;
             aimLayer.weight -= Time.deltaTime / aimDuration;
+        }
     }
     
     // LMB triggers this method. A timer is checking the elapsed time between shots.
     // Recoil is generated accordingly.
-    IEnumerator Shoot(bool mouseBtnDown)
+    private IEnumerator Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
     {
         if (!mouseBtnDown) yield break;
+        if (isGunHolstered) yield break;
+        if (!isAiming) yield break;
 
         var timeOfCurrentShot = Time.time;
         if (!(_timeOfLastShot + 0.1f <= timeOfCurrentShot)) yield break;
@@ -114,14 +125,14 @@ public class PlayerAiming : MonoBehaviour
 
     // The delay makes the transition better between animation states!
     // Events weren't working really well bc of the rig layers!
-    IEnumerator EnableRigLayers()
+    private IEnumerator EnableRigLayers()
     {
         yield return new WaitForSeconds(0.6f);
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = true;
         rigLayers.SetActive(true); // This needs to be here so weapon is only spawned when hands are together!
     }
-    IEnumerator DisableRigLayers()
+    private IEnumerator DisableRigLayers()
     {
         yield return new WaitForSeconds(0.1f);
         // The named one will be set to true, the rest will be turned off:
@@ -130,12 +141,13 @@ public class PlayerAiming : MonoBehaviour
     }
     
     // Methods are used to generate weapon recoil when player is shooting.
-    Vector3 RecoilUpward(Vector3 vector, float y)
+    // They can be kept static.
+    private static Vector3 RecoilUpward(Vector3 vector, float y)
     {
         vector.y += y;
         return vector;
     }
-    Vector3 RecoilDownward(Vector3 vector, float y)
+    private static Vector3 RecoilDownward(Vector3 vector, float y)
     {
         vector.y -= y;
         return vector;
