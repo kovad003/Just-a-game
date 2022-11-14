@@ -12,6 +12,8 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private Rig aimLayer;
     [SerializeField] private GameObject rigLayers;
     [SerializeField] private GameObject holsteredPistol;
+    [SerializeField] private LayerMask layerMask;
+    private Rigidbody _playerRb;
     private Camera _mainCamera;
     private Transform _aimingRef;
     private RigBuilder _rigBuilder;
@@ -36,6 +38,7 @@ public class PlayerAiming : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         // Binding Components:
+        _playerRb = GetComponent<Rigidbody>();
         _rigBuilder = GetComponent<RigBuilder>();
         _animator = GetComponent<Animator>();
         
@@ -46,17 +49,13 @@ public class PlayerAiming : MonoBehaviour
     // FixedUpdate() must be used bc player has physics and rigidbody.
     private void FixedUpdate()
     {
-        float playerCamera = _mainCamera.transform.rotation.eulerAngles.y;
-        // Camera will blend in (on the y-axis) from current rotation towards the camera's rotation.
-        transform.rotation = Quaternion.Slerp(transform.rotation, 
-            Quaternion.Euler(0, playerCamera, 0), turnSpeed * Time.fixedDeltaTime );
-        
-        // Debug.Log("_aimingRef.transform.position = " + _aimingRef.transform.position);
+        HandleCamera(); // Must be here. CM cam is also using FU(). It is bc of player aiming.
     }
 
     // Update is enough for scanning user input.
     private void Update()
     {
+        SampleGround();
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1));
         StartCoroutine(Shoot(Input.GetMouseButtonDown(0), 
@@ -64,6 +63,14 @@ public class PlayerAiming : MonoBehaviour
         
     }
     /**************************************************************************************************************/
+    private void HandleCamera()
+    {
+        float playerCamera = _mainCamera.transform.rotation.eulerAngles.y;
+        // Camera will blend in (on the y-axis) from current rotation towards the camera's rotation.
+        transform.rotation = Quaternion.Slerp(transform.rotation,
+            Quaternion.Euler(0, playerCamera, 0), turnSpeed * Time.fixedDeltaTime);
+    }
+    
     // Holding RMB triggers this method. Player can aim at any target after the
     // the player character assumed aiming position.
     private void MouseAim(bool mouseInput)
@@ -151,5 +158,21 @@ public class PlayerAiming : MonoBehaviour
     {
         vector.y -= y;
         return vector;
+    }
+
+    private void SampleGround()
+    {
+        RaycastHit hitInfo;
+        float maxRange = 1.1f;
+        if (Physics.Raycast(_playerRb.worldCenterOfMass, 
+                Vector3.down, out hitInfo, maxRange, layerMask))
+        {
+            Debug.Log("You are grounded!");
+        }
+        else
+        {
+            Debug.Log("You are falling!");
+        }
+
     }
 }
