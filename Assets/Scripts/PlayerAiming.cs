@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -12,6 +13,11 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private Rig aimLayer;
     [SerializeField] private GameObject rigLayers;
     [SerializeField] private GameObject holsteredPistol;
+    [SerializeField] private float rateOfFire = 0.1f;
+    [SerializeField] private float weaponRange = 100.0f;
+    [SerializeField] private Transform weaponBarrel;
+    [SerializeField] private float damageCaused;
+    
     private Camera _mainCamera;
     private Transform _aimingRef;
     private RigBuilder _rigBuilder;
@@ -23,7 +29,7 @@ public class PlayerAiming : MonoBehaviour
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int HolsterPistol = Animator.StringToHash("HolsterPistol");
     private static readonly int UnholsterPistol = Animator.StringToHash("UnholsterPistol");
-
+    
     /**************************************************************************************************************/
     // Start is called before the first frame update
     private void Start()
@@ -38,7 +44,7 @@ public class PlayerAiming : MonoBehaviour
         // Binding Components:
         _rigBuilder = GetComponent<RigBuilder>();
         _animator = GetComponent<Animator>();
-        
+
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
     }
@@ -53,7 +59,7 @@ public class PlayerAiming : MonoBehaviour
     private void Update()
     {
         HolsterGun(KeyCode.H);
-        MouseAim(Input.GetMouseButton(1));
+        MouseAim(Input.GetMouseButton(1)); 
         StartCoroutine(Shoot(Input.GetMouseButtonDown(0), 
             _animator.GetBool(IsPistolHolstered), _isAiming));
         
@@ -89,20 +95,45 @@ public class PlayerAiming : MonoBehaviour
     // Recoil is generated accordingly.
     private IEnumerator Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
     {
+        // Conditions:
         if (!mouseBtnDown) yield break;
         if (isGunHolstered) yield break;
         if (!isAiming) yield break;
+        if (FeedingNextBulletIntoBarrel()) yield break;
+        // Before Yield:
 
-        var timeOfCurrentShot = Time.time;
-        if (!(_timeOfLastShot + 0.1f <= timeOfCurrentShot)) yield break;
+        RaycastHit hit;
+        if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
+        {
+            Debug.DrawRay(weaponBarrel.position, hit.point, Color.blue); 
+            Debug.Log("I hit: " + hit.transform.name);
+
+            EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+            if (target != null)
+                target.TakeDamage(damageCaused);
+        }
+        else
+        {
+            yield break;
+        }
         
-        _timeOfLastShot = Time.time;
+        
         var aimAt = _aimingRef.transform;
         aimAt.position = RecoilUpward(aimAt.position, 8f * Time.fixedDeltaTime);
+        // Yield:
         yield return new WaitForSeconds(0.1f);
+        // Continue:
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
-    
+
+    private bool FeedingNextBulletIntoBarrel()
+    {
+        var currentTime = Time.time;
+        if (_timeOfLastShot + rateOfFire >= currentTime) return true;
+        _timeOfLastShot = currentTime; 
+        return false; // Next bullet inserted into the barrel -> FIRE!
+    }
+
     // The release of the "H" key triggers this method. The executed coroutines will affect
     // the Rig Builder component by enabling / disabling the attached Rig Layers. This way
     // the animator will have more control over the movement of the player character.

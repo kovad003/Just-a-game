@@ -44,7 +44,7 @@ public class PlayerLocomotion : MonoBehaviour
         if (Physics.Raycast(_playerRb.worldCenterOfMass, 
                 Vector3.down, out hitInfo, maxRange, layerMask))
         {
-            Debug.Log("You are grounded!");
+            // Debug.Log("You are grounded!");
             if (_animator.GetBool(IsInAir))
             {
                 _animator.SetTrigger(HasHitGround);

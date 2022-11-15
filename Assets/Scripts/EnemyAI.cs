@@ -1,9 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.ProBuilder;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -11,21 +7,43 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float chaseRadius = 10;
     private NavMeshAgent _navMeshAgent;
     private float _distanceToTarget = Mathf.Infinity;
+    private bool _isProvoked = false;
     
     
-    // Start is called before the first frame update
     private void Start()
     {
         // Binding Components:
         _navMeshAgent = GetComponent<NavMeshAgent>();
     }
-
-    // Update is called once per frame
+    
     private void Update()
     {
         _distanceToTarget = Vector3.Distance(target.position, transform.position);
-        if (chaseRadius <= _distanceToTarget)
-            _navMeshAgent.SetDestination(target.position);
+        EngageTarget();
+    }
+
+    private void EngageTarget()
+    {
+        if (_distanceToTarget >= _navMeshAgent.stoppingDistance)
+        {
+            ChaseTarget();
+        }
+
+        if (_distanceToTarget < _navMeshAgent.stoppingDistance)
+        {
+           AttackTarget(); 
+        }
+    }
+
+    private void ChaseTarget()
+    {
+        // _isProvoked = true;
+        _navMeshAgent.SetDestination(target.position);
+    }
+
+    private void AttackTarget()
+    {
+        Debug.Log("ATTACKING!" + target.name + "is being attacked.");
     }
 
     private void OnDrawGizmosSelected()
