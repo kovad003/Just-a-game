@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -17,6 +16,8 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private float weaponRange = 100.0f;
     [SerializeField] private Transform weaponBarrel;
     [SerializeField] private float damageCaused;
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject hitEffect;
     
     private Camera _mainCamera;
     private Transform _aimingRef;
@@ -60,8 +61,7 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         MouseAim(Input.GetMouseButton(1)); 
-        StartCoroutine(Shoot(Input.GetMouseButtonDown(0), 
-            _animator.GetBool(IsPistolHolstered), _isAiming));
+        Shoot(Input.GetMouseButtonDown(0), _animator.GetBool(IsPistolHolstered), _isAiming);
         
     }
     /**************************************************************************************************************/
@@ -93,37 +93,55 @@ public class PlayerAiming : MonoBehaviour
     
     // LMB triggers this method. A timer is checking the elapsed time between shots.
     // Recoil is generated accordingly.
-    private IEnumerator Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
+     private void Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
     {
         // Conditions:
-        if (!mouseBtnDown) yield break;
-        if (isGunHolstered) yield break;
-        if (!isAiming) yield break;
-        if (FeedingNextBulletIntoBarrel()) yield break;
+        if (!mouseBtnDown) return;
+        if (isGunHolstered) return;
+        if (!isAiming) return;
+        if (FeedingNextBulletIntoBarrel()) return;
+        
+        ProcessRaycast();
+        PlayMuzzleFlash();
+        StartCoroutine(ProcessRecoil());
+    }
+
+     private void PlayMuzzleFlash()
+     {
+         muzzleFlash.Play();
+         StartCoroutine(HandleFlicker(muzzleFlash));
+     }
+
+     private IEnumerator ProcessRecoil()
+    {
         // Before Yield:
-
-        RaycastHit hit;
-        if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
-        {
-            Debug.DrawRay(weaponBarrel.position, hit.point, Color.blue); 
-            Debug.Log("I hit: " + hit.transform.name);
-
-            EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
-            if (target != null)
-                target.TakeDamage(damageCaused);
-        }
-        else
-        {
-            yield break;
-        }
-        
-        
         var aimAt = _aimingRef.transform;
         aimAt.position = RecoilUpward(aimAt.position, 8f * Time.fixedDeltaTime);
         // Yield:
         yield return new WaitForSeconds(0.1f);
         // Continue:
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
+    }
+
+    private void ProcessRaycast()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
+        {
+            Debug.DrawRay(weaponBarrel.position, hit.point, Color.blue); 
+            Debug.Log("I hit: " + hit.transform.name);
+
+            CreateHitImpact(hit);
+            EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+            if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
+                target.TakeDamage(damageCaused);
+        }
+    }
+
+    private void CreateHitImpact(RaycastHit hit)
+    {
+        GameObject impact = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
+        Destroy(impact, 1);
     }
 
     private bool FeedingNextBulletIntoBarrel()
@@ -172,6 +190,13 @@ public class PlayerAiming : MonoBehaviour
         // The named one will be set to true, the rest will be turned off:
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = i.name == "RigLayerBodyAim";
+    }
+
+    private IEnumerator HandleFlicker(ParticleSystem p)
+    {
+        p.GetComponent<Light>().enabled = true;
+        yield return new WaitForSeconds(0.1f);
+        p.GetComponent<Light>().enabled = false;
     }
     
     // Methods are used to generate weapon recoil when player is shooting.
