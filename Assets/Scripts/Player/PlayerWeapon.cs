@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VolumetricLines;
 
 /// <summary>
 /// AUTHOR: @Daniel K.
@@ -14,7 +15,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private GameObject hitEffect;
     [SerializeField] private Animator playersAnimator;
     [SerializeField] private Transform aimingRef;
-    
+
     // private Light 
     private float _timeOfLastShot;
     // private bool _isAiming = true;
@@ -27,7 +28,6 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
-        
     }
 
     // Update is enough for scanning user input.
