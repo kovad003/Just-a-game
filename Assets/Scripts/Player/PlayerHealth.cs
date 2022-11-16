@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class PlayerHealth : MonoBehaviour
 {
     [SerializeField] private float hitPoints = 100.0f;
@@ -8,17 +11,15 @@ public class PlayerHealth : MonoBehaviour
 
     private void Start()
     {
+        // Binding Fields:
         _animator = GetComponent<Animator>();
     }
 
+    // Method administers the damage taken by the player.
     public void TakeDamage(float damage)
     {
         hitPoints -= damage;
-        Debug.Log("Damage taken by player: " + damage);
         if (hitPoints <= 0.0f)
-        {
-            Debug.Log("You have died!");
             _animator.SetTrigger(Die);
-        }
     }
 }

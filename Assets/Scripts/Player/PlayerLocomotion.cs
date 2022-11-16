@@ -1,13 +1,18 @@
 using UnityEngine;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class PlayerLocomotion : MonoBehaviour
 {
-    [SerializeField] private LayerMask layerMask;
     private Rigidbody _playerRb;
     private Animator _animator;
     private Vector2 _input;
-    private float _inAirTimer = 0.0f;
-
+    
+    [Header("Ground Sampling")]
+    [SerializeField] private float rayCastsMaxRange = 1.1f;
+    [SerializeField] private LayerMask layerMask;
+    
     /* Animator Param References: */
     private static readonly int InputX = Animator.StringToHash("input_X");
     private static readonly int InputY = Animator.StringToHash("input_Y");
@@ -16,14 +21,14 @@ public class PlayerLocomotion : MonoBehaviour
     private static readonly int IsInAir = Animator.StringToHash("isInAir");
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         _animator = GetComponent<Animator>();
         _playerRb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         HandlingInput();
         SampleGround();
@@ -37,28 +42,37 @@ public class PlayerLocomotion : MonoBehaviour
         _animator.SetFloat(InputY, _input.y);
     }
 
+    // Method is sampling the layers beneath the player using raycast. The ray originates
+    // from the center of the player and should reach a bit below the player. If the casted
+    // ray hits the ground (layer mask) then landing animations will be executed. If the ray
+    // hits other than the ground player will fall.
     private void SampleGround()
     {
         RaycastHit hitInfo;
-        float maxRange = 1.1f;
         if (Physics.Raycast(_playerRb.worldCenterOfMass, 
-                Vector3.down, out hitInfo, maxRange, layerMask))
+                Vector3.down, out hitInfo, rayCastsMaxRange, layerMask))
+            ProcessLanding();
+        else 
+            ProcessFalling();
+    }
+
+    // Method will execute landing animations (player has just been grounded).
+    private void ProcessLanding()
+    {
+        if (_animator.GetBool(IsInAir))
         {
-            // Debug.Log("You are grounded!");
-            if (_animator.GetBool(IsInAir))
-            {
-                _animator.SetTrigger(HasHitGround);
-                _animator.ResetTrigger(Falling);
-                _animator.SetBool(IsInAir, false);
-            }
-            _animator.ResetTrigger(HasHitGround);
-            
+            _animator.SetTrigger(HasHitGround);
+            _animator.ResetTrigger(Falling);
+            _animator.SetBool(IsInAir, false);
         }
-        else
-        {
-            Debug.Log("You are falling!");
-            _animator.SetTrigger(Falling);
-            _animator.SetBool(IsInAir, true);
-        }
+
+        _animator.ResetTrigger(HasHitGround);
+    }
+
+    // Method will execute falling animations (player is in air.).
+    private void ProcessFalling()
+    {
+        _animator.SetTrigger(Falling);
+        _animator.SetBool(IsInAir, true);
     }
 }

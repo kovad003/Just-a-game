@@ -1,25 +1,24 @@
 using UnityEngine;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class EnemyAttack : MonoBehaviour
 {
-    // Start is called before the first frame update
-    private PlayerHealth _target;
     [SerializeField] private float damage = 40.0f;
-    private Animator _animator;
-
+    private PlayerHealth _target;
+    
     private void Start()
     {
-        _animator = GetComponent<Animator>();
+        // Binding Fields:
         _target = FindObjectOfType<PlayerHealth>();
     }
 
+    // Event Function. Zombie Attack animation includes the AttackHitEvent. The event triggers this method directly.
+    // No need for method call!
     public void AttackHitEvent()
     {
-        Debug.Log("AttackHitEvent");
-        if (_target != null)
-        {
-            _target.TakeDamage(damage);
-            Debug.Log("A zombie has hit you!");
-        }
+        if (_target == null) return;
+        _target.TakeDamage(damage);
     }
 }

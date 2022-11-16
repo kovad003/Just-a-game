@@ -1,48 +1,48 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class EnemyHealth : MonoBehaviour
 {
     [SerializeField] private float hitPoints = 100.0f;
     private Animator _animator;
-    private NavMeshAgent _navMeshAgent;
-
     private bool _isDead = false;
     
-    /* Animator */
+    /* Animator Param References - Zombie animator! */
     private static readonly int DieZombie = Animator.StringToHash("Die");
 
     private void Start()
     {
+        // Binding Fields:
         _animator = GetComponent<Animator>();
-        _navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
+    // Method informs other classes when enemy dies.
     public bool IsDead()
     {
         return _isDead;
     }
 
+    
+    // PlayerWeapon.cs class calls this public method to decrease enemy's hit points.
     public void TakeDamage(float damageTaken)
     {
         hitPoints -= damageTaken;
         if (hitPoints <= 0.0f)
         {
             hitPoints = 0.0f;
-            // Destroy(gameObject);
             Die();
         }
     }
 
+    // Method executes the enemy's death sequence. Method cannot be called on a dead enemy.
     private void Die()
     {
+        // Condition prevents "Die() loop" on dead zombies:
         if (_isDead) return;
 
         _animator.SetTrigger(DieZombie);
         _isDead = true;
-        _navMeshAgent.enabled = false;
     }
 }

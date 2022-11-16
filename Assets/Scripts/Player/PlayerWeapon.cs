@@ -1,6 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class PlayerWeapon : MonoBehaviour
 {
     [SerializeField] private float rateOfFire = 0.1f;
@@ -12,6 +15,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Animator playersAnimator;
     [SerializeField] private Transform aimingRef;
     
+    // private Light 
     private float _timeOfLastShot;
     // private bool _isAiming = true;
 
@@ -23,6 +27,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
+        
     }
 
     // Update is enough for scanning user input.
@@ -44,17 +49,18 @@ public class PlayerWeapon : MonoBehaviour
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
         
-        ProcessRaycast();
+        ProcessBulletHit();
         PlayMuzzleFlash();
         StartCoroutine(ProcessRecoil());
     }
 
+     // Method Generates muzzle flash after each shot.
      private void PlayMuzzleFlash()
      {
          muzzleFlash.Play();
-         StartCoroutine(HandleFlicker(muzzleFlash));
      }
 
+     // Method generates recoil after each shot. A coroutine is used to generate upward and downward amplitude.
      private IEnumerator ProcessRecoil()
     {
         // Before Yield:
@@ -66,14 +72,12 @@ public class PlayerWeapon : MonoBehaviour
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
 
-    private void ProcessRaycast()
+    // Method is using a raycast to determine what has been hit.
+     private void ProcessBulletHit()
     {
         RaycastHit hit;
         if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
         {
-            Debug.DrawRay(weaponBarrel.position, hit.point, Color.blue); 
-            Debug.Log("I hit: " + hit.transform.name);
-
             CreateHitImpact(hit);
             EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
             if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
@@ -81,12 +85,14 @@ public class PlayerWeapon : MonoBehaviour
         }
     }
 
+     // Method generates visual effects at the spot of impact.
     private void CreateHitImpact(RaycastHit hit)
     {
         GameObject impact = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
         Destroy(impact, 1);
     }
 
+    // Method regulates how fast the player can shoot with the equipped weapon. 
     private bool FeedingNextBulletIntoBarrel()
     {
         var currentTime = Time.time;
@@ -95,13 +101,6 @@ public class PlayerWeapon : MonoBehaviour
         return false; // Next bullet inserted into the barrel -> FIRE!
     }
 
-    private IEnumerator HandleFlicker(ParticleSystem p)
-    {
-        p.GetComponent<Light>().enabled = true;
-        yield return new WaitForSeconds(0.1f);
-        p.GetComponent<Light>().enabled = false;
-    }
-    
     // Methods are used to generate weapon recoil when player is shooting.
     // They can be kept static.
     private static Vector3 RecoilUpward(Vector3 vector, float y)
