@@ -6,10 +6,11 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Transform pointOfInterest;
     [SerializeField] private Transform target;
     [SerializeField] private float chaseRadius = 5;
+    [SerializeField] private float distanceToSafeZone = 10.0f;
     private NavMeshAgent _navMeshAgent;
     private float _distanceToTarget = Mathf.Infinity;
-    [SerializeField] private float distanceToSafeZone = 10.0f;
     private Animator _animator;
+    private EnemyHealth _enemyHealth;
     
     /* Animator */
     private static readonly int CalmDown = Animator.StringToHash("CalmDown");
@@ -22,10 +23,17 @@ public class EnemyAI : MonoBehaviour
         // Binding Components:
         _animator = GetComponent<Animator>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
+        _enemyHealth = GetComponent<EnemyHealth>();
     }
     
     private void Update()
     {
+        if (_enemyHealth.IsDead())
+        {
+            enabled = false;
+            _navMeshAgent.enabled = false;
+        }
+
         _distanceToTarget = Vector3.Distance(target.position, transform.position);
         EngageTarget();
     }

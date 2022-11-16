@@ -15,7 +15,8 @@ public class EnemyAttack : MonoBehaviour
 
     public void AttackHitEvent()
     {
-        if (_target == null)
+        Debug.Log("AttackHitEvent");
+        if (_target != null)
         {
             _target.TakeDamage(damage);
             Debug.Log("A zombie has hit you!");

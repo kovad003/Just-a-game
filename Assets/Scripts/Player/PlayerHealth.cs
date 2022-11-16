@@ -4,6 +4,7 @@ public class PlayerHealth : MonoBehaviour
 {
     [SerializeField] private float hitPoints = 100.0f;
     private Animator _animator;
+    private static readonly int Die = Animator.StringToHash("Die");
 
     private void Start()
     {
@@ -17,7 +18,7 @@ public class PlayerHealth : MonoBehaviour
         if (hitPoints <= 0.0f)
         {
             Debug.Log("You have died!");
-            _animator.SetTrigger("Die");
+            _animator.SetTrigger(Die);
         }
     }
 }
