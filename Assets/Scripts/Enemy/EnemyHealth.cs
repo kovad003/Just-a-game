@@ -8,12 +8,10 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private float hitPoints = 100.0f;
     private Animator _animator;
     private EnemyAI _enemyAI;
-    private bool _isDead = false;
+    private bool _isDead;
     
     /* Animator Param References - Zombie animator! */
     private static readonly int DieZombie = Animator.StringToHash("Die");
-    private static readonly int Move = Animator.StringToHash("Move");
-    private static readonly int Attack = Animator.StringToHash("Attack");
 
     private void Start()
     {
@@ -28,11 +26,10 @@ public class EnemyHealth : MonoBehaviour
         return _isDead;
     }
 
-    
     // PlayerWeapon.cs class calls this public method to decrease enemy's hit points.
     public void TakeDamage(float damageTaken)
     {
-        _enemyAI.GetProvoked();
+        _enemyAI.OnDamageTaken();
         
         hitPoints -= damageTaken;
         if (hitPoints <= 0.0f)

@@ -116,12 +116,12 @@ public class EnemyAI : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime *turnSpeed);
     }
     
-    public void GetProvoked()
+    public void OnDamageTaken()
     {
-        StartCoroutine(ProvokeThis());
+        StartCoroutine(GetProvoked());
     }
     
-    private IEnumerator ProvokeThis()
+    private IEnumerator GetProvoked()
     {
         // Before Yield:
         _isProvoked = true;

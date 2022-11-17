@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// AUTHOR: @Daniel K.
+/// </summary>
 public class DeathHandler : MonoBehaviour
 {
     [SerializeField] private Canvas gameOverCanvas;
