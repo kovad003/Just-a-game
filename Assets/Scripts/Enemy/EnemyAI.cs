@@ -11,8 +11,9 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private Transform pointOfInterest;
     [SerializeField] private Transform self;
     [SerializeField] private Transform target;
-    [SerializeField] private float chaseRadius = 5;
+    [SerializeField] private float chaseRadius = 5.0f;
     [SerializeField] private float distanceToSafeZone = 10.0f;
+    [SerializeField] private float turnSpeed = 5.0f;
     private NavMeshAgent _navMeshAgent;
     private float _distanceToTarget = Mathf.Infinity;
     private Animator _animator;
@@ -61,16 +62,23 @@ public class EnemyAI : MonoBehaviour
     // This method acts a control relay. Enemy response is based on the distance between enemy and player.
     private void EngageTarget()
     {
+        // FaceTarget();
         if (_distanceToTarget >= distanceToSafeZone)
             // LookAround();
             StayIdle();
 
         /*_distanceToTarget >= _navMeshAgent.stoppingDistance && */
         if (_distanceToTarget < distanceToSafeZone || _isProvoked)
+        {
+            FaceTarget();
             ChaseTarget();
+        }
 
         if (_distanceToTarget < _navMeshAgent.stoppingDistance)
+        {
+            FaceTarget();
             AttackTarget();
+        }
     }
 
     // When it is called, method calms the enemy down. 
@@ -102,6 +110,13 @@ public class EnemyAI : MonoBehaviour
         _animator.ResetTrigger(Move);
     }
 
+    private void FaceTarget()
+    {
+        Vector3 direction = (target.position - transform.position).normalized;
+        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime *turnSpeed);
+    }
+    
     public void GetProvoked()
     {
         StartCoroutine(ProvokeThis());
