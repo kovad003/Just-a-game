@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -15,11 +16,11 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Animator playersAnimator;
     [SerializeField] private Transform aimingRef;
     [SerializeField] private Ammo ammoSlot;
-
-    // private Light 
+    [SerializeField] private AmmoType ammoType;
+    
     private float _timeOfLastShot;
-    // private bool _isAiming = true;
-
+    private bool _canShoot = true;
+    
     /* Animator Param References - Player Character's Animator!: */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int IsAiming = Animator.StringToHash("isAiming");
@@ -39,6 +40,11 @@ public class PlayerWeapon : MonoBehaviour
     }
     
     /**************************************************************************************************************/
+    private void OnEnable()
+    {
+        _canShoot = true;
+    }
+
     // LMB triggers this method. A timer is checking the elapsed time between shots.
     // Recoil is generated accordingly.
      private void Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
@@ -49,11 +55,11 @@ public class PlayerWeapon : MonoBehaviour
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
 
-        if (ammoSlot.GetCurrentAmmo() > 0)
+        if (ammoSlot.GetCurrentAmmo(ammoType) > 0)
         {
             ProcessBulletHit();
             PlayMuzzleFlash();
-            ammoSlot.ReduceCurrentAmmo();
+            ammoSlot.ReduceCurrentAmmo(ammoType);
             StartCoroutine(ProcessRecoil());
         }
     }
