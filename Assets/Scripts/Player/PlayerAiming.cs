@@ -31,10 +31,8 @@ public class PlayerAiming : MonoBehaviour
     {
         // Handling Camera:
         _mainCamera = Camera.main;
-        // if (_mainCamera != null)
-        //     _aimingRef = _mainCamera.transform.Find("REF_AimLookAt");
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        // Cursor.visible = false;
+        // Cursor.lockState = CursorLockMode.Locked;
 
         // Binding Components:
         _rigBuilder = GetComponent<RigBuilder>();
