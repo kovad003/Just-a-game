@@ -14,6 +14,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private GameObject hitEffect;
     [SerializeField] private Animator playersAnimator;
     [SerializeField] private Transform aimingRef;
+    [SerializeField] private Ammo ammoSlot;
 
     // private Light 
     private float _timeOfLastShot;
@@ -47,10 +48,14 @@ public class PlayerWeapon : MonoBehaviour
         if (isGunHolstered) return;
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
-        
-        ProcessBulletHit();
-        PlayMuzzleFlash();
-        StartCoroutine(ProcessRecoil());
+
+        if (ammoSlot.GetCurrentAmmo() > 0)
+        {
+            ProcessBulletHit();
+            PlayMuzzleFlash();
+            ammoSlot.ReduceCurrentAmmo();
+            StartCoroutine(ProcessRecoil());
+        }
     }
 
      // Method Generates muzzle flash after each shot.
