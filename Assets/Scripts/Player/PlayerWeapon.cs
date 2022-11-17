@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using VolumetricLines;
 
 /// <summary>
 /// AUTHOR: @Daniel K.
@@ -82,6 +81,7 @@ public class PlayerWeapon : MonoBehaviour
             EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
             if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
                 target.TakeDamage(damageCaused);
+                
         }
     }
 

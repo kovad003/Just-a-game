@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -7,6 +9,7 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour
 {
     [SerializeField] private Transform pointOfInterest;
+    [SerializeField] private Transform self;
     [SerializeField] private Transform target;
     [SerializeField] private float chaseRadius = 5;
     [SerializeField] private float distanceToSafeZone = 10.0f;
@@ -14,13 +17,14 @@ public class EnemyAI : MonoBehaviour
     private float _distanceToTarget = Mathf.Infinity;
     private Animator _animator;
     private EnemyHealth _enemyHealth;
+    private bool _isProvoked;
     
     /* Animator */
-    private static readonly int CalmDown = Animator.StringToHash("CalmDown");
+    private static readonly int IsIdle = Animator.StringToHash("IsIdle");
     private static readonly int Move = Animator.StringToHash("Move");
     private static readonly int Attack = Animator.StringToHash("Attack");
 
-
+    
     private void Start()
     {
         // Binding Components:
@@ -57,12 +61,12 @@ public class EnemyAI : MonoBehaviour
     // This method acts a control relay. Enemy response is based on the distance between enemy and player.
     private void EngageTarget()
     {
-        // Debug.Log("_distanceToTarget: " + _distanceToTarget);
         if (_distanceToTarget >= distanceToSafeZone)
             // LookAround();
             StayIdle();
 
-        if (_distanceToTarget >= _navMeshAgent.stoppingDistance && _distanceToTarget < distanceToSafeZone)
+        /*_distanceToTarget >= _navMeshAgent.stoppingDistance && */
+        if (_distanceToTarget < distanceToSafeZone || _isProvoked)
             ChaseTarget();
 
         if (_distanceToTarget < _navMeshAgent.stoppingDistance)
@@ -72,22 +76,46 @@ public class EnemyAI : MonoBehaviour
     // When it is called, method calms the enemy down. 
     private void StayIdle()
     {
-        _animator.SetTrigger(CalmDown);
+        _animator.ResetTrigger(Move);
+        _animator.ResetTrigger(Attack);
+        _animator.SetBool(IsIdle, true);
+        _navMeshAgent.SetDestination(self.position);
     }
 
     // Enemy will move closer to the player if method is called.
     private void ChaseTarget()
     {
+        _animator.SetBool(IsIdle, false);
         _animator.SetTrigger(Move);
+        // Other triggers must be reset:
+        _animator.ResetTrigger(Attack);
+        
         _navMeshAgent.SetDestination(target.position);
     }
 
     // Enemy attacks the target when method is called.
     private void AttackTarget()
     {
+        _animator.SetBool(IsIdle, false);
+        // Other triggers must be reset:
         _animator.SetTrigger(Attack);
+        _animator.ResetTrigger(Move);
     }
 
+    public void GetProvoked()
+    {
+        StartCoroutine(ProvokeThis());
+    }
+    
+    private IEnumerator ProvokeThis()
+    {
+        // Before Yield:
+        _isProvoked = true;
+        yield return new WaitForSeconds(1.0f);
+        // Continue:
+        _isProvoked = false;
+    }
+    
     // For debugging only. Will draw a wire sphere representing the chase radius of the enemy.
     private void OnDrawGizmosSelected()
     {
