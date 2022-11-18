@@ -9,13 +9,11 @@ public class PlayerAiming : MonoBehaviour
 {
     [SerializeField] private float turnSpeed = 15.0f;
     [SerializeField] private float aimDuration = 0.3f;
-    [SerializeField] private Rig aimLayer;
-    [SerializeField] private GameObject rigLayers;
     [SerializeField] private GameObject holsteredPistol;
 
     private Camera _mainCamera;
     private Transform _aimingRef;
-    private RigBuilder _rigBuilder;
+    private RigHandler _rigHandler;
     private Animator _animator;
     private float _timeOfLastShot;
 
@@ -35,7 +33,7 @@ public class PlayerAiming : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
 
         // Binding Components:
-        _rigBuilder = GetComponent<RigBuilder>();
+        _rigHandler = GetComponent<RigHandler>();
         _animator = GetComponent<Animator>();
     }
     
@@ -49,7 +47,7 @@ public class PlayerAiming : MonoBehaviour
     private void Update()
     {
         HolsterGun(KeyCode.H);
-        MouseAim(Input.GetMouseButton(1));
+        Aim(Input.GetMouseButton(1));
     }
     /**************************************************************************************************************/
     private void HandleCamera()
@@ -62,21 +60,21 @@ public class PlayerAiming : MonoBehaviour
     
     // Holding RMB triggers this method. Player can aim at any target after the
     // the player character assumed aiming position.
-    private void MouseAim(bool mouseInput)
+    private void Aim(bool mouseInput)
     {
         if (_animator.GetBool(IsPistolHolstered)) return;
         if (mouseInput)
         {
             // _isAiming = true;
             _animator.SetBool(IsAiming, true);
-            aimLayer.weight += Time.deltaTime / aimDuration;
+            _rigHandler.AdjustAimLayer(aimDuration, true);
         }
 
         else
         {
             // _isAiming = false;
             _animator.SetBool(IsAiming, false);
-            aimLayer.weight -= Time.deltaTime / aimDuration;
+            _rigHandler.AdjustAimLayer(aimDuration, false);
         }
     }
     
@@ -89,34 +87,16 @@ public class PlayerAiming : MonoBehaviour
         if (_animator.GetBool(IsPistolHolstered) == false)
         {
             _animator.SetTrigger(HolsterPistol);
-            StartCoroutine(DisableRigLayers(0.4f));
-            rigLayers.SetActive(false);
+            _rigHandler.RelaxJoints();
             holsteredPistol.SetActive(true);
             _animator.SetBool(IsPistolHolstered, true);
         }
         else
         {
             _animator.SetTrigger(UnholsterPistol);
-            StartCoroutine(EnableRigLayers(2.0f));
+            _rigHandler.CloseJoints();
             holsteredPistol.SetActive(false);
             _animator.SetBool(IsPistolHolstered, false);
         }
-    }
-
-    // The delay makes the transition better between animation states!
-    // Events weren't working really well bc of the rig layers!
-    private IEnumerator EnableRigLayers(float transitionTime)
-    {
-        yield return new WaitForSeconds(transitionTime);
-        foreach (RigLayer i in _rigBuilder.layers)
-            i.active = true;
-        rigLayers.SetActive(true); // This needs to be here so weapon is only spawned when hands are together!
-    }
-    private IEnumerator DisableRigLayers(float transitionTime)
-    {
-        yield return new WaitForSeconds(transitionTime);
-        // The named one will be set to true, the rest will be turned off:
-        foreach (RigLayer i in _rigBuilder.layers)
-            i.active = i.name == "RigLayerBodyAim";
     }
 }
