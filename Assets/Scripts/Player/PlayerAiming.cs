@@ -89,7 +89,7 @@ public class PlayerAiming : MonoBehaviour
         if (_animator.GetBool(IsPistolHolstered) == false)
         {
             _animator.SetTrigger(HolsterPistol);
-            StartCoroutine(DisableRigLayers());
+            StartCoroutine(DisableRigLayers(0.4f));
             rigLayers.SetActive(false);
             holsteredPistol.SetActive(true);
             _animator.SetBool(IsPistolHolstered, true);
@@ -97,7 +97,7 @@ public class PlayerAiming : MonoBehaviour
         else
         {
             _animator.SetTrigger(UnholsterPistol);
-            StartCoroutine(EnableRigLayers());
+            StartCoroutine(EnableRigLayers(2.0f));
             holsteredPistol.SetActive(false);
             _animator.SetBool(IsPistolHolstered, false);
         }
@@ -105,16 +105,16 @@ public class PlayerAiming : MonoBehaviour
 
     // The delay makes the transition better between animation states!
     // Events weren't working really well bc of the rig layers!
-    private IEnumerator EnableRigLayers()
+    private IEnumerator EnableRigLayers(float transitionTime)
     {
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(transitionTime);
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = true;
         rigLayers.SetActive(true); // This needs to be here so weapon is only spawned when hands are together!
     }
-    private IEnumerator DisableRigLayers()
+    private IEnumerator DisableRigLayers(float transitionTime)
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(transitionTime);
         // The named one will be set to true, the rest will be turned off:
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = i.name == "RigLayerBodyAim";
