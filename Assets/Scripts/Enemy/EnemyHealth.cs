@@ -20,13 +20,13 @@ public class EnemyHealth : MonoBehaviour
         _enemyAI = GetComponent<EnemyAI>();
     }
 
-    // Method informs other classes when enemy dies.
+    /// Method informs other classes when enemy dies.
     public bool IsDead()
     {
         return _isDead;
     }
 
-    // PlayerWeapon.cs class calls this public method to decrease enemy's hit points.
+    /// PlayerWeapon.cs class calls this public method to decrease enemy's hit points.
     public void TakeDamage(float damageTaken)
     {
         _enemyAI.OnDamageTaken();
@@ -39,7 +39,7 @@ public class EnemyHealth : MonoBehaviour
         }
     }
 
-    // Method executes the enemy's death sequence. Method cannot be called on a dead enemy.
+    /// Method executes the enemy's death sequence. Method cannot be called on a dead enemy.
     private void Die()
     {
         // Condition prevents "Die() loop" on dead zombies:

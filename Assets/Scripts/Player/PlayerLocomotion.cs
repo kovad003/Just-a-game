@@ -42,10 +42,10 @@ public class PlayerLocomotion : MonoBehaviour
         _animator.SetFloat(InputY, _input.y);
     }
 
-    // Method is sampling the layers beneath the player using raycast. The ray originates
-    // from the center of the player and should reach a bit below the player. If the casted
-    // ray hits the ground (layer mask) then landing animations will be executed. If the ray
-    // hits other than the ground player will fall.
+    /// Method is sampling the layers beneath the player using raycast. The ray originates
+    /// from the center of the player and should reach a bit below the player. If the casted
+    /// ray hits the ground (layer mask) then landing animations will be executed. If the ray
+    /// hits other than the ground player will fall.
     private void SampleGround()
     {
         RaycastHit hitInfo;
@@ -56,7 +56,7 @@ public class PlayerLocomotion : MonoBehaviour
             ProcessFalling();
     }
 
-    // Method will execute landing animations (player has just been grounded).
+    /// Method will execute landing animations (player has just been grounded).
     private void ProcessLanding()
     {
         if (_animator.GetBool(IsInAir))
@@ -69,7 +69,7 @@ public class PlayerLocomotion : MonoBehaviour
         _animator.ResetTrigger(HasHitGround);
     }
 
-    // Method will execute falling animations (player is in air.).
+    /// Method will execute falling animations (player is in air.).
     private void ProcessFalling()
     {
         _animator.SetTrigger(Falling);

@@ -15,7 +15,7 @@ public class PlayerHealth : MonoBehaviour
         _animator = GetComponent<Animator>();
     }
 
-    // Method administers the damage taken by the player.
+    /// Method administers the damage taken by the player.
     public void TakeDamage(float damage)
     {
         hitPoints -= damage;

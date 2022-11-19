@@ -40,15 +40,15 @@ public class EnemyAI : MonoBehaviour
         DisableAI();
     }
 
-    // Method is sampling the distance between the enemy and the player.
-    // This distance affects the behaviour of the enemy. 
+    /// Method is sampling the distance between the enemy and the player.
+    /// This distance affects the behaviour of the enemy. 
     private void SampleTargetDistance()
     {
         _distanceToTarget = Vector3.Distance(target.position, transform.position);
     }
 
-    // If the enemy character dies the "AI script" and "NavMesh" components must be disabled to prevent
-    // further "activities".
+    /// If the enemy character dies the "AI script" and "NavMesh" components must be disabled to prevent
+    /// further "activities".
     private void DisableAI()
     {
         // If enemy is alive AI cannot be disabled:
@@ -58,7 +58,7 @@ public class EnemyAI : MonoBehaviour
         _navMeshAgent.enabled = false;
     }
 
-    // This method acts a control relay. Enemy response is based on the distance between enemy and player.
+    /// This method acts a control relay. Enemy response is based on the distance between enemy and player.
     private void EngageTarget()
     {
         // FaceTarget();
@@ -80,7 +80,7 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
-    // When it is called, method calms the enemy down. 
+    /// When it is called, method calms the enemy down. 
     private void StayIdle()
     {
         _animator.ResetTrigger(Move);
@@ -89,7 +89,7 @@ public class EnemyAI : MonoBehaviour
         _navMeshAgent.SetDestination(self.position);
     }
 
-    // Enemy will move closer to the player if method is called.
+    /// Enemy will move closer to the player if method is called.
     private void ChaseTarget()
     {
         _animator.SetBool(IsIdle, false);
@@ -100,7 +100,7 @@ public class EnemyAI : MonoBehaviour
         _navMeshAgent.SetDestination(target.position);
     }
 
-    // Enemy attacks the target when method is called.
+    /// Enemy attacks the target when method is called.
     private void AttackTarget()
     {
         _animator.SetBool(IsIdle, false);
@@ -116,11 +116,13 @@ public class EnemyAI : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime *turnSpeed);
     }
     
+    /// Method administers the damage taken by the enemy character.
     public void OnDamageTaken()
     {
         StartCoroutine(GetProvoked());
     }
     
+    /// Method Temporarily 
     private IEnumerator GetProvoked()
     {
         // Before Yield:
@@ -130,7 +132,7 @@ public class EnemyAI : MonoBehaviour
         _isProvoked = false;
     }
     
-    // For debugging only. Will draw a wire sphere representing the chase radius of the enemy.
+    /// For debugging only. Will draw a wire sphere representing the chase radius of the enemy.
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

@@ -1,6 +1,4 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 
 /// <summary>
 /// AUTHOR: @Daniel K.
@@ -24,7 +22,6 @@ public class PlayerAiming : MonoBehaviour
     private static readonly int IsAiming = Animator.StringToHash("isAiming");
 
     /**************************************************************************************************************/
-    // Start is called before the first frame update
     private void Start()
     {
         // Handling Camera:
@@ -51,6 +48,7 @@ public class PlayerAiming : MonoBehaviour
     }
 
     /**************************************************************************************************************/
+    /// This method handles the camre movement and rotation.
     private void HandleCamera()
     {
         float playerCamera = _mainCamera.transform.rotation.eulerAngles.y;
@@ -63,14 +61,15 @@ public class PlayerAiming : MonoBehaviour
     // the player character assumed aiming position.
     private void Aim(bool mouseInput)
     {
-        if (_animator.GetBool(IsPistolHolstered)) return;
+        // Condition:
+        if (_animator.GetBool(IsPistolHolstered)) return; // Gun must be equipped.
+        
         if (mouseInput)
         {
             // _isAiming = true;
             _animator.SetBool(IsAiming, true);
             _rigHandler.AdjustAimLayer(aimDuration, true);
         }
-
         else
         {
             // _isAiming = false;
@@ -79,11 +78,12 @@ public class PlayerAiming : MonoBehaviour
         }
     }
 
-    // The release of the "H" key triggers this method. The executed coroutines will affect
-    // the Rig Builder component by enabling / disabling the attached Rig Layers. This way
-    // the animator will have more control over the movement of the player character.
+    /// The release of the "H" key triggers this method. The executed coroutines will affect
+    /// the Rig Builder component by enabling / disabling the attached Rig Layers. This way
+    /// the animator will have more control over the movement of the player character.
     private void HolsterGun(KeyCode key)
     {
+        // Condition:
         if (!Input.GetKeyUp(key)) return;
         if (_animator.GetBool(IsPistolHolstered) == false)
         {

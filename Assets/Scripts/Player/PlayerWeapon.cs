@@ -45,30 +45,36 @@ public class PlayerWeapon : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
-        ReloadMagazine(KeyCode.R);
+        ReloadWeapon(KeyCode.R);
         Shoot(Input.GetMouseButtonDown(0), 
             playersAnimator.GetBool(IsPistolHolstered), 
             playersAnimator.GetBool(IsAiming));
     }
     
     /**************************************************************************************************************/
-    private void ReloadMagazine(KeyCode key)
+    /// This method contains multiple parts. Relies on user input so needs to be placed in the Update() method.
+    /// By executing it, player will eject current magazine from the weapon, then takes ammo from the
+    /// "ammo pouch" (ammo slot). As a final step a new mag is inserted in to the weapon.
+    private void ReloadWeapon(KeyCode key)
     {
         // Conditions:
         if (!Input.GetKeyUp(key)) return;
-        if (_isBeingReloaded) return;
+        if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
         
-        DropCurrentMag();
+        EjectCurrentMag();
         FetchAmmo();
         InsertNewMag();
     }
 
-    private void DropCurrentMag()
+    
+    /// This method is an integral part of the ReloadWeapon() function. It drops the current magazine from
+    /// the weapon. The ammunition stored in it will be disposed as well. 
+    private void EjectCurrentMag()
     {
-        // if (_isBeingReloaded) return;
         magazine.ammoAmountInMag = 0;
     }
-
+    
+    /// This method fills up the new mag with ammunition fetched from the "ammo pouch" (ammunition slot).
     private void FetchAmmo()
     {
         var totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
@@ -77,16 +83,16 @@ public class PlayerWeapon : MonoBehaviour
             ammoSlot.ReduceTotalAmmo(ammoType);
             magazine.ammoAmountInMag++;
         }
-        Debug.Log("Ammo am. in mag = " + magazine.ammoAmountInMag);
     }
+    
+    /// This method starts a coroutine that processes the weapon magazine replacement.
     private void InsertNewMag()
     {
-        // if (_isBeingReloaded) return;
         StartCoroutine(ProcessMagReplacement());
     }
 
-    // LMB triggers this method. A timer is checking the elapsed time between shots.
-    // Recoil is generated accordingly.
+    /// LMB triggers this method. A timer is checking the elapsed time between shots.
+    /// Recoil is generated accordingly.
      private void Shoot(bool mouseBtnDown, bool isGunHolstered, bool isAiming)
     {
         // Conditions:
@@ -105,13 +111,13 @@ public class PlayerWeapon : MonoBehaviour
         }
     }
 
-     // Method Generates muzzle flash after each shot.
+     /// Method Generates muzzle flash after each shot.
      private void PlayMuzzleFlash()
      {
          muzzleFlash.Play();
      }
 
-     // Method generates recoil after each shot. A coroutine is used to generate upward and downward amplitude.
+     /// Method generates recoil after each shot. A coroutine is used to generate upward and downward amplitude.
      private IEnumerator ProcessRecoil()
     {
         // Before Yield:
@@ -123,12 +129,19 @@ public class PlayerWeapon : MonoBehaviour
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
 
+     
+     ///<summary> This method is a coroutine. <br/><br/> 1) The first part will utilize the
+     /// RigHandler class to modify the Rig Layers, so the mag reload process can actually take
+     /// place in the world space. The "reloading flag" is turned to true, so other methods relying
+     /// on it can be executed / blocked accordingly. <br/><br/> 2) The second part will suspend
+     /// the method till the reload process is finished. When all is done the flag is turned back
+     /// to false, so a new reload process can take place. </summary>
      private IEnumerator ProcessMagReplacement()
      {
          // Before Yield:
          _isBeingReloaded = true;
          if (ammoSlot.GetTotalAmmo(ammoType) > 0)
-             _rigHandler.EnableReloadAdjustments(true, reloadDuration);
+             _rigHandler.EnableReloadAdjustments(_isBeingReloaded, reloadDuration);
          // Yield:
          // need 2x multiplier bc
          yield return new WaitForSeconds(2*reloadDuration);
@@ -136,8 +149,8 @@ public class PlayerWeapon : MonoBehaviour
          _isBeingReloaded = false;
      }
      
-    // Method is using a raycast to determine what has been hit.
-     private void ProcessBulletHit()
+    /// Method is using a raycast to determine what has been hit. The acquired info is stored in an out param.
+    private void ProcessBulletHit()
     {
         RaycastHit hit;
         if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
@@ -146,18 +159,19 @@ public class PlayerWeapon : MonoBehaviour
             EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
             if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
                 target.TakeDamage(damageCaused);
-                
         }
     }
 
-     // Method generates visual effects at the spot of impact.
+     /// Method generates visual effects at the spot of impact. It need to be uses inside of the
+     /// ProcessBulletHit() method.
     private void CreateHitImpact(RaycastHit hit)
     {
         GameObject impact = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
         Destroy(impact, 1);
     }
 
-    // Method regulates how fast the player can shoot with the equipped weapon. 
+    /// Method regulates how fast the player can shoot with the equipped weapon. It imitates an actual
+    /// bullet insertion mechanism.
     private bool FeedingNextBulletIntoBarrel()
     {
         var currentTime = Time.time;
@@ -166,13 +180,13 @@ public class PlayerWeapon : MonoBehaviour
         return false; // Next bullet inserted into the barrel -> FIRE!
     }
 
-    // Methods are used to generate weapon recoil when player is shooting.
-    // They can be kept static.
+    /// Method generates upward weapon recoil when player is shooting.
     private static Vector3 RecoilUpward(Vector3 vector, float y)
     {
         vector.y += y;
         return vector;
     }
+    /// Method generates downward weapon recoil when player is shooting.
     private static Vector3 RecoilDownward(Vector3 vector, float y)
     {
         vector.y -= y;
