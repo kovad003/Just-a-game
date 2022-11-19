@@ -21,7 +21,7 @@ public class PlayerWeapon : MonoBehaviour
 
     private RigHandler _rigHandler;
     private float _timeOfLastShot;
-    private bool _canShoot = true;
+    private bool _isBeingReloaded;
 
     /* Animator Param References - Player Character's Animator!: */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
@@ -52,17 +52,21 @@ public class PlayerWeapon : MonoBehaviour
     }
     
     /**************************************************************************************************************/
-    private void OnEnable()
-    {
-        _canShoot = true;
-    }
-
     private void ReloadMagazine(KeyCode key)
     {
-        // Condition:
+        // Conditions:
         if (!Input.GetKeyUp(key)) return;
+        if (_isBeingReloaded) return;
+        
+        DropCurrentMag();
         FetchAmmo();
-        HandleReloadRigChanges();
+        InsertNewMag();
+    }
+
+    private void DropCurrentMag()
+    {
+        // if (_isBeingReloaded) return;
+        magazine.ammoAmountInMag = 0;
     }
 
     private void FetchAmmo()
@@ -75,10 +79,10 @@ public class PlayerWeapon : MonoBehaviour
         }
         Debug.Log("Ammo am. in mag = " + magazine.ammoAmountInMag);
     }
-    private void HandleReloadRigChanges()
+    private void InsertNewMag()
     {
-        if (ammoSlot.GetTotalAmmo(ammoType) > 0)
-            _rigHandler.EnableReloadAdjustments(true, reloadDuration);
+        // if (_isBeingReloaded) return;
+        StartCoroutine(ProcessMagReplacement());
     }
 
     // LMB triggers this method. A timer is checking the elapsed time between shots.
@@ -90,6 +94,7 @@ public class PlayerWeapon : MonoBehaviour
         if (isGunHolstered) return;
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
+        if (_isBeingReloaded) return;
 
         if (magazine.ammoAmountInMag > 0)
         {
@@ -118,6 +123,19 @@ public class PlayerWeapon : MonoBehaviour
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
 
+     private IEnumerator ProcessMagReplacement()
+     {
+         // Before Yield:
+         _isBeingReloaded = true;
+         if (ammoSlot.GetTotalAmmo(ammoType) > 0)
+             _rigHandler.EnableReloadAdjustments(true, reloadDuration);
+         // Yield:
+         // need 2x multiplier bc
+         yield return new WaitForSeconds(2*reloadDuration);
+         // Continue:
+         _isBeingReloaded = false;
+     }
+     
     // Method is using a raycast to determine what has been hit.
      private void ProcessBulletHit()
     {
