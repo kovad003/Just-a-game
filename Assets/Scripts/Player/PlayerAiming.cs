@@ -48,7 +48,6 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         Aim(Input.GetMouseButton(1));
-        ChangeMag(KeyCode.R);
     }
 
     /**************************************************************************************************************/
@@ -100,12 +99,5 @@ public class PlayerAiming : MonoBehaviour
             holsteredPistol.SetActive(false);
             _animator.SetBool(IsPistolHolstered, false);
         }
-    }
-
-    // Method executes reload Rig Layer adjustments for weapon cartridge (magazine) exchange.
-    private void ChangeMag(KeyCode key)
-    {
-        if (!Input.GetKeyUp(key)) return;
-        _rigHandler.SetReloadBool(true);
     }
 }

@@ -17,10 +17,12 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Transform aimingRef;
     [SerializeField] private Ammo ammoSlot;
     [SerializeField] private AmmoType ammoType;
+    [SerializeField] private float reloadDuration = 0.5f;
 
+    private RigHandler _rigHandler;
     private float _timeOfLastShot;
     private bool _canShoot = true;
-    
+
     /* Animator Param References - Player Character's Animator!: */
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int IsAiming = Animator.StringToHash("isAiming");
@@ -37,6 +39,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
+        _rigHandler = FindObjectOfType<RigHandler>();
     }
 
     // Update is enough for scanning user input.
@@ -58,14 +61,24 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Condition:
         if (!Input.GetKeyUp(key)) return;
+        FetchAmmo();
+        HandleReloadRigChanges();
+    }
 
-        var totalAmmo  = ammoSlot.GetTotalAmmo(ammoType);
+    private void FetchAmmo()
+    {
+        var totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
         while ((magazine.ammoAmountInMag < totalAmmo) && totalAmmo > 0 && magazine.ammoAmountInMag < magazine.magSize)
         {
             ammoSlot.ReduceTotalAmmo(ammoType);
             magazine.ammoAmountInMag++;
         }
         Debug.Log("Ammo am. in mag = " + magazine.ammoAmountInMag);
+    }
+    private void HandleReloadRigChanges()
+    {
+        if (ammoSlot.GetTotalAmmo(ammoType) > 0)
+            _rigHandler.EnableReloadAdjustments(true, reloadDuration);
     }
 
     // LMB triggers this method. A timer is checking the elapsed time between shots.

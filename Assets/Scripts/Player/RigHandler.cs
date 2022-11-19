@@ -10,27 +10,32 @@ public class RigHandler : MonoBehaviour
     [SerializeField] private float disableRigAfterSeconds;
     [SerializeField] private Rig aimLayer;
     [SerializeField] private TwoBoneIKConstraint leftHandIK;
+    [SerializeField] private float leftArmTurningPoint = 0.2f;
     
     private RigBuilder _rigBuilder;
     private bool _isReloading;
+    private float _reloadDuration;
 
     private void Start()
     {
         _rigBuilder = GetComponent<RigBuilder>();
     }
 
-    // float my_value=0f;
-    // float min_value=10.0f;
-    // float max_value=20.0f;
     private void Update()
+    {
+        AdjustLeftHandIK();
+    }
+
+    public void EnableReloadAdjustments(bool b, float reloadDuration)
+    {
+        _isReloading = b;
+        _reloadDuration = reloadDuration;
+    }
+
+    private void AdjustLeftHandIK()
     {
         RelaxLeftArm();
         LockLeftArm();
-    }
-
-    public void SetReloadBool(bool b)
-    {
-        _isReloading = b;
     }
     
     public void AdjustAimLayer(float duration, bool isAiming)
@@ -56,9 +61,9 @@ public class RigHandler : MonoBehaviour
         // Condition:
         if (!_isReloading) return;
         
-        leftHandIK.weight -= Time.deltaTime / 0.5f;
-        if (leftHandIK.weight <= 0.2f)
-            SetReloadBool(false);
+        leftHandIK.weight -= Time.deltaTime / _reloadDuration;
+        if (leftHandIK.weight <= leftArmTurningPoint)
+            _isReloading = false;
     }
 
     private void LockLeftArm()
@@ -66,7 +71,7 @@ public class RigHandler : MonoBehaviour
         // Condition:
         if (_isReloading) return;
         
-        leftHandIK.weight += Time.deltaTime / 0.5f;
+        leftHandIK.weight += Time.deltaTime / _reloadDuration;
     }
     
     // The delay makes the transition better between animation states!
