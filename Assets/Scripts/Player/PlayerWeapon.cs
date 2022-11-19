@@ -33,6 +33,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         public int magSize = 12;
         public int ammoAmountInMag = 0;
+        public bool isInserted;
     }
     
     private void Start()
@@ -45,51 +46,72 @@ public class PlayerWeapon : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
-        ReloadWeapon(KeyCode.R);
+        TriggerWeaponReload(KeyCode.R);
+        ReloadWeapon();
+        Debug.Log("IsBeingReloaded = " + _isBeingReloaded);
+
         Shoot(Input.GetMouseButtonDown(0), 
             playersAnimator.GetBool(IsPistolHolstered), 
             playersAnimator.GetBool(IsAiming));
     }
     
     /**************************************************************************************************************/
+    private void TriggerWeaponReload(KeyCode key)
+    {
+        if (!Input.GetKeyUp(key)) return;
+        if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
+
+        _isBeingReloaded = true;
+    }
+    
     /// This method contains multiple parts. Relies on user input so needs to be placed in the Update() method.
     /// By executing it, player will eject current magazine from the weapon, then takes ammo from the
     /// "ammo pouch" (ammo slot). As a final step a new mag is inserted in to the weapon.
-    private void ReloadWeapon(KeyCode key)
+    private void ReloadWeapon()
     {
-        // Conditions:
-        if (!Input.GetKeyUp(key)) return;
-        if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
-        
+        if (!_isBeingReloaded) return;
         EjectCurrentMag();
         FetchAmmo();
         InsertNewMag();
     }
 
-    
     /// This method is an integral part of the ReloadWeapon() function. It drops the current magazine from
     /// the weapon. The ammunition stored in it will be disposed as well. 
     private void EjectCurrentMag()
     {
+        // Conditions:
+        if (!Input.GetKeyUp(KeyCode.R)) return;
+        if (!magazine.isInserted) return; // There must be a mag inserted into the gun!
+        
         magazine.ammoAmountInMag = 0;
+        magazine.isInserted = false;
     }
-    
+    private void InsertNewMag()
+    {
+        if (magazine.isInserted) return;
+        StartCoroutine(_rigHandler.ExecuteReloadMovements(reloadDuration, (returnedValue) =>
+        {
+            Debug.Log("cb = " + returnedValue);
+            // _isBeingReloaded = returnedValue;
+            _isBeingReloaded = returnedValue;
+            magazine.isInserted = true;
+        }));
+    }
     /// This method fills up the new mag with ammunition fetched from the "ammo pouch" (ammunition slot).
     private void FetchAmmo()
     {
+        if (!Input.GetKeyUp(KeyCode.R)) return;
+        if (magazine.isInserted) return; // There must be a mag inserted into the gun!
+        
         var totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
-        while ((magazine.ammoAmountInMag < totalAmmo) && totalAmmo > 0 && magazine.ammoAmountInMag < magazine.magSize)
+        while ((totalAmmo > 0) 
+               && magazine.ammoAmountInMag < magazine.magSize)
         {
             ammoSlot.ReduceTotalAmmo(ammoType);
             magazine.ammoAmountInMag++;
         }
     }
     
-    /// This method starts a coroutine that processes the weapon magazine replacement.
-    private void InsertNewMag()
-    {
-        StartCoroutine(ProcessMagReplacement());
-    }
 
     /// LMB triggers this method. A timer is checking the elapsed time between shots.
     /// Recoil is generated accordingly.
@@ -129,27 +151,7 @@ public class PlayerWeapon : MonoBehaviour
         aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
     }
 
-     
-     ///<summary> This method is a coroutine. <br/><br/> 1) The first part will utilize the
-     /// RigHandler class to modify the Rig Layers, so the mag reload process can actually take
-     /// place in the world space. The "reloading flag" is turned to true, so other methods relying
-     /// on it can be executed / blocked accordingly. <br/><br/> 2) The second part will suspend
-     /// the method till the reload process is finished. When all is done the flag is turned back
-     /// to false, so a new reload process can take place. </summary>
-     private IEnumerator ProcessMagReplacement()
-     {
-         // Before Yield:
-         _isBeingReloaded = true;
-         if (ammoSlot.GetTotalAmmo(ammoType) > 0)
-             _rigHandler.EnableReloadAdjustments(_isBeingReloaded, reloadDuration);
-         // Yield:
-         // need 2x multiplier bc
-         yield return new WaitForSeconds(2*reloadDuration);
-         // Continue:
-         _isBeingReloaded = false;
-     }
-     
-    /// Method is using a raycast to determine what has been hit. The acquired info is stored in an out param.
+     /// Method is using a raycast to determine what has been hit. The acquired info is stored in an out param.
     private void ProcessBulletHit()
     {
         RaycastHit hit;

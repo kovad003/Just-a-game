@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
@@ -12,40 +13,12 @@ public class RigHandler : MonoBehaviour
     [SerializeField] private float leftArmTurningPoint = 0.2f;
     
     private RigBuilder _rigBuilder;
-    private bool _isReloading;
-    private float _reloadDuration;
 
     private void Start()
     {
         _rigBuilder = GetComponent<RigBuilder>();
     }
 
-    private void Update()
-    {
-        AdjustLeftHandIK(_reloadDuration, _isReloading);
-    }
-
-    /// This method enables rig layer modifications when player is reloading. This should be
-    /// called from the weapon object when player wants to reload.
-    /// <param name="isReloading"></param>
-    /// <param name="reloadDuration"></param>
-    public void EnableReloadAdjustments(bool isReloading, float reloadDuration)
-    {
-        _isReloading = isReloading;
-        _reloadDuration = reloadDuration;
-    }
-    
-    /// Method need to be placed in the Update() section. When player calls for a mag exchange
-    /// The EnableReloadAdjustment() method will change the necessary fields so the method will
-    /// be executed carrying out the physical reload process via the HandIK (Rig Layers).
-    /// <param name="duration"></param>
-    /// <param name="isReloading"></param>
-    private void AdjustLeftHandIK(float duration, bool isReloading)
-    {
-        MoveLeftHandToAmmoBelt(duration, isReloading);
-        MoveLeftHandBackToWeapon(duration, isReloading);
-    }
-    
     /// Method adjust weapon height and angle upon aiming.
     /// <param name="duration"></param>
     /// <param name="isAiming"></param>
@@ -72,27 +45,17 @@ public class RigHandler : MonoBehaviour
     /// Method modifies the LeftHandIK's weight setting thus player will reach for a new mag
     /// with the left hand. Should be called before the MoveLeftHandBackToWeapon() function.
     /// <param name="duration"></param>
-    /// <param name="isReloading"></param>
-    private void MoveLeftHandToAmmoBelt(float duration, bool isReloading)
+    private void MoveLeftHandToAmmoBelt(float duration)
     {
-        // Condition:
-        if (!isReloading) return;
-        
         leftHandIK.weight -= Time.deltaTime / duration;
-        if (leftHandIK.weight <= leftArmTurningPoint)
-            _isReloading = false;
     }
 
     /// Method should be executed after the MoveLeftHandToAmmoBelt() function has been called.
     /// It modifies the LeftHandIK's weight setting thus player will move the left hand back to the weapon.
     /// (Looks like a new mag is inserted into the weapon.)
     /// <param name="duration"></param>
-    /// <param name="isReloading"></param>
-    private void MoveLeftHandBackToWeapon(float duration, bool isReloading)
+    private void MoveLeftHandBackToWeapon(float duration)
     {
-        // Condition:
-        if (isReloading) return;
-        
         leftHandIK.weight += Time.deltaTime / duration;
     }
     
@@ -116,4 +79,16 @@ public class RigHandler : MonoBehaviour
         foreach (RigLayer i in _rigBuilder.layers)
             i.active = i.name == "RigLayerBodyAim";
     }
+
+    public IEnumerator ExecuteReloadMovements(float reloadDuration, Action<bool> callback)
+    {
+        // Before Yield:
+        MoveLeftHandToAmmoBelt(reloadDuration);
+        // Yield:
+        yield return new WaitForSeconds(reloadDuration);
+        // Continue:
+        MoveLeftHandBackToWeapon(reloadDuration);
+        callback(false);
+    }
+    
 }
