@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
+using UnityEngine.PlayerLoop;
 
 public class RigHandler : MonoBehaviour
 {
@@ -8,12 +9,28 @@ public class RigHandler : MonoBehaviour
     [SerializeField] private float enableRigAfterSeconds;
     [SerializeField] private float disableRigAfterSeconds;
     [SerializeField] private Rig aimLayer;
+    [SerializeField] private TwoBoneIKConstraint leftHandIK;
     
     private RigBuilder _rigBuilder;
+    private bool _isReloading;
 
     private void Start()
     {
         _rigBuilder = GetComponent<RigBuilder>();
+    }
+
+    // float my_value=0f;
+    // float min_value=10.0f;
+    // float max_value=20.0f;
+    private void Update()
+    {
+        RelaxLeftArm();
+        LockLeftArm();
+    }
+
+    public void SetReloadBool(bool b)
+    {
+        _isReloading = b;
     }
     
     public void AdjustAimLayer(float duration, bool isAiming)
@@ -29,9 +46,27 @@ public class RigHandler : MonoBehaviour
         StartCoroutine(DisableRigLayers(/*0.4f*/));
     }
 
-    public void CloseJoints()
+    public void LockJoints()
     {
         StartCoroutine(EnableRigLayers(/*2.0f*/));
+    }
+
+    private void RelaxLeftArm()
+    {
+        // Condition:
+        if (!_isReloading) return;
+        
+        leftHandIK.weight -= Time.deltaTime / 0.5f;
+        if (leftHandIK.weight <= 0.2f)
+            SetReloadBool(false);
+    }
+
+    private void LockLeftArm()
+    {
+        // Condition:
+        if (_isReloading) return;
+        
+        leftHandIK.weight += Time.deltaTime / 0.5f;
     }
     
     // The delay makes the transition better between animation states!

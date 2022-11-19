@@ -17,7 +17,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Transform aimingRef;
     [SerializeField] private Ammo ammoSlot;
     [SerializeField] private AmmoType ammoType;
-    
+
     private float _timeOfLastShot;
     private bool _canShoot = true;
     
@@ -25,6 +25,14 @@ public class PlayerWeapon : MonoBehaviour
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int IsAiming = Animator.StringToHash("isAiming");
 
+    [SerializeField] private Magazine magazine;
+    [Serializable]
+    private class Magazine
+    {
+        public int magSize = 12;
+        public int ammoAmountInMag = 0;
+    }
+    
     private void Start()
     {
         // Binding Important Fields:
@@ -34,6 +42,7 @@ public class PlayerWeapon : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
+        ReloadMagazine(KeyCode.R);
         Shoot(Input.GetMouseButtonDown(0), 
             playersAnimator.GetBool(IsPistolHolstered), 
             playersAnimator.GetBool(IsAiming));
@@ -43,6 +52,20 @@ public class PlayerWeapon : MonoBehaviour
     private void OnEnable()
     {
         _canShoot = true;
+    }
+
+    private void ReloadMagazine(KeyCode key)
+    {
+        // Condition:
+        if (!Input.GetKeyUp(key)) return;
+
+        var totalAmmo  = ammoSlot.GetTotalAmmo(ammoType);
+        while ((magazine.ammoAmountInMag < totalAmmo) && totalAmmo > 0 && magazine.ammoAmountInMag < magazine.magSize)
+        {
+            ammoSlot.ReduceTotalAmmo(ammoType);
+            magazine.ammoAmountInMag++;
+        }
+        Debug.Log("Ammo am. in mag = " + magazine.ammoAmountInMag);
     }
 
     // LMB triggers this method. A timer is checking the elapsed time between shots.
@@ -55,11 +78,11 @@ public class PlayerWeapon : MonoBehaviour
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
 
-        if (ammoSlot.GetCurrentAmmo(ammoType) > 0)
+        if (magazine.ammoAmountInMag > 0)
         {
             ProcessBulletHit();
             PlayMuzzleFlash();
-            ammoSlot.ReduceCurrentAmmo(ammoType);
+            magazine.ammoAmountInMag--;
             StartCoroutine(ProcessRecoil());
         }
     }

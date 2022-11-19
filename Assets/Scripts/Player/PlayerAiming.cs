@@ -36,7 +36,7 @@ public class PlayerAiming : MonoBehaviour
         _rigHandler = GetComponent<RigHandler>();
         _animator = GetComponent<Animator>();
     }
-    
+
     // FixedUpdate() must be used bc player has physics and rigidbody.
     private void FixedUpdate()
     {
@@ -48,7 +48,9 @@ public class PlayerAiming : MonoBehaviour
     {
         HolsterGun(KeyCode.H);
         Aim(Input.GetMouseButton(1));
+        ChangeMag(KeyCode.R);
     }
+
     /**************************************************************************************************************/
     private void HandleCamera()
     {
@@ -57,7 +59,7 @@ public class PlayerAiming : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation,
             Quaternion.Euler(0, playerCamera, 0), turnSpeed * Time.fixedDeltaTime);
     }
-    
+
     // Holding RMB triggers this method. Player can aim at any target after the
     // the player character assumed aiming position.
     private void Aim(bool mouseInput)
@@ -77,7 +79,7 @@ public class PlayerAiming : MonoBehaviour
             _rigHandler.AdjustAimLayer(aimDuration, false);
         }
     }
-    
+
     // The release of the "H" key triggers this method. The executed coroutines will affect
     // the Rig Builder component by enabling / disabling the attached Rig Layers. This way
     // the animator will have more control over the movement of the player character.
@@ -94,9 +96,16 @@ public class PlayerAiming : MonoBehaviour
         else
         {
             _animator.SetTrigger(UnholsterPistol);
-            _rigHandler.CloseJoints();
+            _rigHandler.LockJoints();
             holsteredPistol.SetActive(false);
             _animator.SetBool(IsPistolHolstered, false);
         }
+    }
+
+    // Method executes reload Rig Layer adjustments for weapon cartridge (magazine) exchange.
+    private void ChangeMag(KeyCode key)
+    {
+        if (!Input.GetKeyUp(key)) return;
+        _rigHandler.SetReloadBool(true);
     }
 }

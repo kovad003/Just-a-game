@@ -14,7 +14,7 @@ public class AmmoPickUp : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            FindObjectOfType<Ammo>().IncreaseCurrentAmmo(_ammoType, ammoAmount);
+            FindObjectOfType<Ammo>().IncreaseTotalAmmo(_ammoType, ammoAmount);
             Destroy(gameObject);
         }
     }
