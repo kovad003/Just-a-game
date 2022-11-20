@@ -18,12 +18,12 @@ public class EnemyAI : MonoBehaviour
     private Animator _animator;
     private EnemyHealth _enemyHealth;
     private bool _isProvoked;
+    private EnemyAudio _enemyAudio;
     
     /* Animator */
     private static readonly int IsIdle = Animator.StringToHash("IsIdle");
     private static readonly int Move = Animator.StringToHash("Move");
     private static readonly int Attack = Animator.StringToHash("Attack");
-
     
     private void Start()
     {
@@ -31,6 +31,7 @@ public class EnemyAI : MonoBehaviour
         _animator = GetComponent<Animator>();
         _navMeshAgent = GetComponent<NavMeshAgent>();
         _enemyHealth = GetComponent<EnemyHealth>();
+        _enemyAudio = GetComponent<EnemyAudio>();
     }
     
     private void Update()
@@ -63,20 +64,24 @@ public class EnemyAI : MonoBehaviour
     {
         // FaceTarget();
         if (_distanceToTarget >= distanceToSafeZone)
-            // LookAround();
+        {
             StayIdle();
+            _enemyAudio.PlayIdleSfx();
+        }
 
         /*_distanceToTarget >= _navMeshAgent.stoppingDistance && */
         if (_distanceToTarget < distanceToSafeZone || _isProvoked)
         {
             FaceTarget();
             ChaseTarget();
+            _enemyAudio.PlayChaseSfx();
         }
 
         if (_distanceToTarget < _navMeshAgent.stoppingDistance)
         {
             FaceTarget();
             AttackTarget();
+            _enemyAudio.PlayAttackSfx();
         }
     }
 
@@ -87,6 +92,7 @@ public class EnemyAI : MonoBehaviour
         _animator.ResetTrigger(Attack);
         _animator.SetBool(IsIdle, true);
         _navMeshAgent.SetDestination(self.position);
+        
     }
 
     /// Enemy will move closer to the player if method is called.
@@ -96,7 +102,6 @@ public class EnemyAI : MonoBehaviour
         _animator.SetTrigger(Move);
         // Other triggers must be reset:
         _animator.ResetTrigger(Attack);
-        
         _navMeshAgent.SetDestination(target.position);
     }
 
