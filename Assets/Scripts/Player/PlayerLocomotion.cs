@@ -5,6 +5,12 @@ using UnityEngine;
 /// </summary>
 public class PlayerLocomotion : MonoBehaviour
 {
+    private AudioSource _audioPlayer;
+    public AudioClip locomotionAudioClip;
+    public AudioClip[] footstepAudioClips;
+    public AudioClip landingAudioClip;
+    [Range(0, 1)] public float footstepAudioVolume = 0.5f;
+
     private Rigidbody _playerRb;
     private Animator _animator;
     private Vector2 _input;
@@ -25,6 +31,8 @@ public class PlayerLocomotion : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _playerRb = GetComponent<Rigidbody>();
+        
+        _audioPlayer = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -34,6 +42,24 @@ public class PlayerLocomotion : MonoBehaviour
         SampleGround();
     }
 
+    /// Method is invoked on landing event. The event is attached to the animation inside the editor.
+    public void OnFootStep(AnimationEvent animationEvent)
+    {
+        if (!(animationEvent.animatorClipInfo.weight > 0.5f)) return;
+        if (footstepAudioClips.Length <= 0) return;
+        var index = Random.Range(0, footstepAudioClips.Length);
+        AudioSource.PlayClipAtPoint(footstepAudioClips[index], transform.TransformPoint(_playerRb.centerOfMass), footstepAudioVolume);
+    }
+    
+    /// Method is invoked on landing event. The event is attached to the animation inside the editor.
+    public void OnLanding(AnimationEvent animationEvent)
+    {
+        if (!(animationEvent.animatorClipInfo.weight > 0.5f)) return;
+        Debug.Log("OnLand");
+        AudioSource.PlayClipAtPoint(landingAudioClip, transform.TransformPoint(_playerRb.centerOfMass), footstepAudioVolume);
+    }
+
+    /// Method processes the user's input.
     private void HandlingInput()
     {
         _input.x = Input.GetAxis("Horizontal");
