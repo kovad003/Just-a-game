@@ -72,3 +72,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 .idea/.idea.Just A Game/.idea/workspace.xml
 .idea/.idea.Just A Game/.idea/workspace.xml
+.idea/.idea.Just A Game/.idea/workspace.xml
+*.xml
