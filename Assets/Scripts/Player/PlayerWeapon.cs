@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class PlayerWeapon : MonoBehaviour
 {
-    public AudioSource audioPlayer;
+    private AudioSource _audioPlayer;
     public AudioClip fireAudioClip; 
     public AudioClip reloadAudioClip; 
 
@@ -45,7 +45,7 @@ public class PlayerWeapon : MonoBehaviour
         _timeOfLastShot = Time.time;
         _rigHandler = FindObjectOfType<RigHandler>();
 
-        audioPlayer = GetComponent<AudioSource>();
+        _audioPlayer = GetComponent<AudioSource>();
     }
 
     // Update is enough for scanning user input.
@@ -61,13 +61,13 @@ public class PlayerWeapon : MonoBehaviour
     /// Method plays shooting sound effect when called. The "one shot" member enables sound overlapping.
     private void PlayFireSfx()
     {
-        audioPlayer.PlayOneShot(fireAudioClip);
+        _audioPlayer.PlayOneShot(fireAudioClip);
     }
 
     /// Method plays reload sound effect when called. The "one shot" member enables sound overlapping.
     private void PlayReloadSfx()
     {
-        audioPlayer.PlayOneShot(reloadAudioClip);
+        _audioPlayer.PlayOneShot(reloadAudioClip);
     }
     
     /**************************************************************************************************************/
