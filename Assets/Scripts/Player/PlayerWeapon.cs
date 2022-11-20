@@ -9,7 +9,8 @@ public class PlayerWeapon : MonoBehaviour
 {
     private AudioSource _audioPlayer;
     public AudioClip fireAudioClip; 
-    public AudioClip reloadAudioClip; 
+    public AudioClip reloadAudioClip;
+    public AudioClip emptyClipAudioClip;
 
     [SerializeField] private float rateOfFire = 0.3f;
     [SerializeField] private float weaponRange = 200.0f;
@@ -68,6 +69,11 @@ public class PlayerWeapon : MonoBehaviour
     private void PlayReloadSfx()
     {
         _audioPlayer.PlayOneShot(reloadAudioClip);
+    }
+
+    private void PlayEmptyClipSfx()
+    {
+        _audioPlayer.PlayOneShot(emptyClipAudioClip);
     }
     
     /**************************************************************************************************************/
@@ -129,6 +135,8 @@ public class PlayerWeapon : MonoBehaviour
             magazine.ammoAmountInMag--;
             StartCoroutine(ProcessRecoil());
         }
+        else
+            PlayEmptyClipSfx();
     }
 
      /// Method Generates muzzle flash after each shot.
