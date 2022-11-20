@@ -68,13 +68,13 @@ public class PlayerAiming : MonoBehaviour
         {
             // _isAiming = true;
             _animator.SetBool(IsAiming, true);
-            _rigHandler.AdjustAimLayer(aimDuration, true);
+            _rigHandler.UpdateAimLayer(aimDuration, true);
         }
         else
         {
             // _isAiming = false;
             _animator.SetBool(IsAiming, false);
-            _rigHandler.AdjustAimLayer(aimDuration, false);
+            _rigHandler.UpdateAimLayer(aimDuration, false);
         }
     }
 

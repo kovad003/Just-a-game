@@ -141,7 +141,7 @@ public class PlayerWeapon : MonoBehaviour
          // Before Yield:
          _isBeingReloaded = true;
          if (ammoSlot.GetTotalAmmo(ammoType) > 0)
-             _rigHandler.EnableReloadAdjustments(_isBeingReloaded, reloadDuration);
+             _rigHandler.EnableLeftHandIKUpdate(_isBeingReloaded, reloadDuration);
          // Yield:
          // need 2x multiplier bc
          yield return new WaitForSeconds(2*reloadDuration);
