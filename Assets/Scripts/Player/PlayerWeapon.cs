@@ -58,7 +58,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
-        _rigHandler = FindObjectOfType<RigHandler>();
+        _rigHandler = FindObjectOfType<RigHandler>(); // is attached to player.
         _playerWeaponAudio = GetComponent<PlayerWeaponAudio>();
         _weaponsAnimator = GetComponent<Animator>();
     }
@@ -66,7 +66,10 @@ public class PlayerWeapon : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
+        // UI:
         DisplayAmmo();
+        
+        // Game Space:
         ReloadWeapon(KeyCode.R);
         Shoot(Input.GetMouseButtonDown(0), 
             playersAnimator.GetBool(IsPistolHolstered), 
@@ -83,22 +86,24 @@ public class PlayerWeapon : MonoBehaviour
         ammoText.text = magAmmo + " / " + totalAmmo;
     }
     
-    /// This method contains multiple parts. Relies on user input so needs to be placed in the Update() method.
+    /// This method relies on user input so needs to be placed in the Update() method.
     /// By executing it, player will eject current magazine from the weapon, then takes ammo from the
-    /// "ammo pouch" (ammo slot). As a final step a new mag is inserted in to the weapon.
+    /// "ammo pouch" (ammo slot). This method fills up the new mag with ammunition fetched from the
+    /// "ammo pouch" (ammunition slot). This method uses a coroutine that processes the weapon
+    /// magazine replacement. It drops the current magazine from  the weapon. The ammunition
+    /// stored in it will be disposed as well.
     private void ReloadWeapon(KeyCode key)
     {
         // Conditions:
         if (!Input.GetKeyUp(key)) return;
         if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
+        
+        // FX and Animations:
         _playerWeaponAudio.PlayReloadSfx();
-        ChangeMag();
-        FetchAmmo();
-    }
-
-    /// This method fills up the new mag with ammunition fetched from the "ammo pouch" (ammunition slot).
-    private void FetchAmmo()
-    {
+        StartCoroutine(MagExchangeRoutine());
+        
+        // Inventory:
+        magazine.ammoAmountInMag = 0; // Dropping the current mag.
         var totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
         while ((magazine.ammoAmountInMag < totalAmmo) 
                && magazine.ammoAmountInMag < magazine.magSize 
@@ -107,14 +112,6 @@ public class PlayerWeapon : MonoBehaviour
             ammoSlot.ReduceTotalAmmo(ammoType);
             magazine.ammoAmountInMag++;
         }
-    }
-    
-    /// This method starts a coroutine that processes the weapon magazine replacement. It drops
-    /// the current magazine from  the weapon. The ammunition stored in it will be disposed as well.
-    private void ChangeMag()
-    {
-        magazine.ammoAmountInMag = 0;
-        StartCoroutine(MagExchangeRoutine());
     }
 
     /// LMB triggers this method. A timer is checking the elapsed time between shots.
@@ -131,7 +128,7 @@ public class PlayerWeapon : MonoBehaviour
         if (magazine.ammoAmountInMag > 0)
         {
             ProcessBulletHit();
-            StartCoroutine(ProcessFxsRoutine());
+            StartCoroutine(WeaponFxsRoutine());
             _playerWeaponAudio.PlayFireSfx();
             magazine.ammoAmountInMag--;
             StartCoroutine(RecoilRoutine());
@@ -139,9 +136,39 @@ public class PlayerWeapon : MonoBehaviour
         else
             _playerWeaponAudio.PlayEmptyClipSfx();
     }
+    
+    /* UTILITY METHODS: */
+    /* !!! These functions are integral parts of other ones that are actively called. */
+    
+    /// Method regulates how fast the player can shoot with the equipped weapon. It imitates an actual
+    /// bullet insertion mechanism.
+    private bool FeedingNextBulletIntoBarrel()
+    {
+        var currentTime = Time.time;
+        if (_timeOfLastShot + rateOfFire >= currentTime) return true;
+        _timeOfLastShot = currentTime; 
+        return false; // Next bullet inserted into the barrel -> FIRE!
+    }
 
-     /// Method Generates muzzle flash and plays the weapon slide animation after each shot.
-     private IEnumerator ProcessFxsRoutine()
+    /// Method is using a raycast to determine what has been hit. The acquired info is stored in an out param.
+    /// Method also creates visual effects at the spot of impact.
+    private void ProcessBulletHit()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
+        {
+            // Creating Hit impact:
+            GameObject impact = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            Destroy(impact, 1);
+            
+            EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
+            if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
+                target.TakeDamage(damageCaused);
+        }
+    }
+
+    /// Method Generates muzzle flash and plays the weapon slide animation after each shot.
+     private IEnumerator WeaponFxsRoutine()
      {
          muzzleFlash.Play();
          _weaponsAnimator.SetTrigger(Fire);
@@ -160,7 +187,6 @@ public class PlayerWeapon : MonoBehaviour
         // Continue:
         aimAt.position = RecoilDownward(aimAt.position, recoilModifier * Time.fixedDeltaTime);
     }
-
      
      ///<summary> This method is a coroutine. <br/><br/> 1) The first part will utilize the
      /// RigHandler class to modify the Rig Layers, so the mag reload process can actually take
@@ -181,37 +207,6 @@ public class PlayerWeapon : MonoBehaviour
          _isBeingReloaded = false;
      }
      
-    /// Method is using a raycast to determine what has been hit. The acquired info is stored in an out param.
-    private void ProcessBulletHit()
-    {
-        RaycastHit hit;
-        if (Physics.Raycast(weaponBarrel.position, weaponBarrel.forward, out hit, weaponRange))
-        {
-            CreateHitImpact(hit);
-            EnemyHealth target = hit.transform.GetComponent<EnemyHealth>();
-            if (target != null) //Hitting inert objects (walls) wont throw "Null Ref error".
-                target.TakeDamage(damageCaused);
-        }
-    }
-
-     /// Method generates visual effects at the spot of impact. It need to be uses inside of the
-     /// ProcessBulletHit() method.
-    private void CreateHitImpact(RaycastHit hit)
-    {
-        GameObject impact = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-        Destroy(impact, 1);
-    }
-
-    /// Method regulates how fast the player can shoot with the equipped weapon. It imitates an actual
-    /// bullet insertion mechanism.
-    private bool FeedingNextBulletIntoBarrel()
-    {
-        var currentTime = Time.time;
-        if (_timeOfLastShot + rateOfFire >= currentTime) return true;
-        _timeOfLastShot = currentTime; 
-        return false; // Next bullet inserted into the barrel -> FIRE!
-    }
-
     /// Method generates upward weapon recoil when player is shooting.
     private static Vector3 RecoilUpward(Vector3 vector, float y)
     {
