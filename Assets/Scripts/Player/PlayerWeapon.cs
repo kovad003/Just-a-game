@@ -7,11 +7,6 @@ using UnityEngine;
 /// </summary>
 public class PlayerWeapon : MonoBehaviour
 {
-    private AudioSource _audioPlayer;
-    public AudioClip fireAudioClip; 
-    public AudioClip reloadAudioClip;
-    public AudioClip emptyClipAudioClip;
-
     [SerializeField] private float rateOfFire = 0.3f;
     [SerializeField] private float weaponRange = 200.0f;
     [SerializeField] private Transform weaponBarrel;
@@ -24,6 +19,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private AmmoType ammoType;
     [SerializeField] private float reloadDuration = 0.6f;
 
+    private PlayerWeaponAudio _playerWeaponAudio;
     private RigHandler _rigHandler;
     private float _timeOfLastShot;
     private bool _isBeingReloaded;
@@ -45,8 +41,7 @@ public class PlayerWeapon : MonoBehaviour
         // Binding Important Fields:
         _timeOfLastShot = Time.time;
         _rigHandler = FindObjectOfType<RigHandler>();
-
-        _audioPlayer = GetComponent<AudioSource>();
+        _playerWeaponAudio = GetComponent<PlayerWeaponAudio>();
     }
 
     // Update is enough for scanning user input.
@@ -57,25 +52,7 @@ public class PlayerWeapon : MonoBehaviour
             playersAnimator.GetBool(IsPistolHolstered), 
             playersAnimator.GetBool(IsAiming));
     }
-    
 
-    /// Method plays shooting sound effect when called. The "one shot" member enables sound overlapping.
-    private void PlayFireSfx()
-    {
-        _audioPlayer.PlayOneShot(fireAudioClip);
-    }
-
-    /// Method plays reload sound effect when called. The "one shot" member enables sound overlapping.
-    private void PlayReloadSfx()
-    {
-        _audioPlayer.PlayOneShot(reloadAudioClip);
-    }
-
-    private void PlayEmptyClipSfx()
-    {
-        _audioPlayer.PlayOneShot(emptyClipAudioClip);
-    }
-    
     /**************************************************************************************************************/
     /// This method contains multiple parts. Relies on user input so needs to be placed in the Update() method.
     /// By executing it, player will eject current magazine from the weapon, then takes ammo from the
@@ -85,7 +62,7 @@ public class PlayerWeapon : MonoBehaviour
         // Conditions:
         if (!Input.GetKeyUp(key)) return;
         if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
-        PlayReloadSfx();
+        _playerWeaponAudio.PlayReloadSfx();
         EjectCurrentMag();
         FetchAmmo();
         InsertNewMag();
@@ -131,12 +108,12 @@ public class PlayerWeapon : MonoBehaviour
         {
             ProcessBulletHit();
             PlayMuzzleFlash();
-            PlayFireSfx();
+            _playerWeaponAudio.PlayFireSfx();
             magazine.ammoAmountInMag--;
             StartCoroutine(ProcessRecoil());
         }
         else
-            PlayEmptyClipSfx();
+            _playerWeaponAudio.PlayEmptyClipSfx();
     }
 
      /// Method Generates muzzle flash after each shot.
