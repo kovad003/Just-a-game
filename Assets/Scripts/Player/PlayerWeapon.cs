@@ -92,19 +92,10 @@ public class PlayerWeapon : MonoBehaviour
         if (!Input.GetKeyUp(key)) return;
         if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
         _playerWeaponAudio.PlayReloadSfx();
-        EjectCurrentMag();
+        ChangeMag();
         FetchAmmo();
-        InsertNewMag();
     }
 
-    
-    /// This method is an integral part of the ReloadWeapon() function. It drops the current magazine from
-    /// the weapon. The ammunition stored in it will be disposed as well. 
-    private void EjectCurrentMag()
-    {
-        magazine.ammoAmountInMag = 0;
-    }
-    
     /// This method fills up the new mag with ammunition fetched from the "ammo pouch" (ammunition slot).
     private void FetchAmmo()
     {
@@ -118,10 +109,12 @@ public class PlayerWeapon : MonoBehaviour
         }
     }
     
-    /// This method starts a coroutine that processes the weapon magazine replacement.
-    private void InsertNewMag()
+    /// This method starts a coroutine that processes the weapon magazine replacement. It drops
+    /// the current magazine from  the weapon. The ammunition stored in it will be disposed as well.
+    private void ChangeMag()
     {
-        StartCoroutine(ProcessMagReplacement());
+        magazine.ammoAmountInMag = 0;
+        StartCoroutine(MagExchangeRoutine());
     }
 
     /// LMB triggers this method. A timer is checking the elapsed time between shots.
@@ -138,17 +131,17 @@ public class PlayerWeapon : MonoBehaviour
         if (magazine.ammoAmountInMag > 0)
         {
             ProcessBulletHit();
-            StartCoroutine(ProcessFxs());
+            StartCoroutine(ProcessFxsRoutine());
             _playerWeaponAudio.PlayFireSfx();
             magazine.ammoAmountInMag--;
-            StartCoroutine(ProcessRecoil());
+            StartCoroutine(RecoilRoutine());
         }
         else
             _playerWeaponAudio.PlayEmptyClipSfx();
     }
 
      /// Method Generates muzzle flash and plays the weapon slide animation after each shot.
-     private IEnumerator ProcessFxs()
+     private IEnumerator ProcessFxsRoutine()
      {
          muzzleFlash.Play();
          _weaponsAnimator.SetTrigger(Fire);
@@ -157,7 +150,7 @@ public class PlayerWeapon : MonoBehaviour
      }
 
      /// Method generates recoil after each shot. A coroutine is used to generate upward and downward amplitude.
-     private IEnumerator ProcessRecoil()
+     private IEnumerator RecoilRoutine()
     {
         // Before Yield:
         var aimAt = aimingRef.transform;
@@ -175,7 +168,7 @@ public class PlayerWeapon : MonoBehaviour
      /// on it can be executed / blocked accordingly. <br/><br/> 2) The second part will suspend
      /// the method till the reload process is finished. When all is done the flag is turned back
      /// to false, so a new reload process can take place. </summary>
-     private IEnumerator ProcessMagReplacement()
+     private IEnumerator MagExchangeRoutine()
      {
          // Before Yield:
          _isBeingReloaded = true; // Prevents reload overlapping.
