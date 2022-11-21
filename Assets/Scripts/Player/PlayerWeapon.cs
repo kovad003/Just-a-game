@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -29,6 +30,9 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Animator playersAnimator;
     [Tooltip("Should be under MainCam")]
     [SerializeField] private Transform aimingRef;
+
+    [Header("UI: ")] 
+    [SerializeField] private TextMeshProUGUI ammoText;
     
     /* HIDDEN FIELDS */
     private Animator _weaponsAnimator;
@@ -62,6 +66,7 @@ public class PlayerWeapon : MonoBehaviour
     // Update is enough for scanning user input.
     private void Update()
     {
+        DisplayAmmo();
         ReloadWeapon(KeyCode.R);
         Shoot(Input.GetMouseButtonDown(0), 
             playersAnimator.GetBool(IsPistolHolstered), 
@@ -69,6 +74,15 @@ public class PlayerWeapon : MonoBehaviour
     }
 
     /**************************************************************************************************************/
+    /* METHODS:  */
+    /// Method display available ammo amount on the in-game canvas.
+    private void DisplayAmmo()
+    {
+        int totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
+        int magAmmo = magazine.ammoAmountInMag;
+        ammoText.text = magAmmo + " / " + totalAmmo;
+    }
+    
     /// This method contains multiple parts. Relies on user input so needs to be placed in the Update() method.
     /// By executing it, player will eject current magazine from the weapon, then takes ammo from the
     /// "ammo pouch" (ammo slot). As a final step a new mag is inserted in to the weapon.
