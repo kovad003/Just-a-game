@@ -1,3 +1,5 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -5,14 +7,16 @@ using UnityEngine;
 /// </summary>
 public class EnemyHealth : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
     [SerializeField] private float hitPoints = 100.0f;
     private Animator _animator;
     private EnemyAI _enemyAI;
     private bool _isDead;
     
-    /* Animator Param References - Zombie animator! */
+    // Animator Hash
     private static readonly int DieZombie = Animator.StringToHash("Die");
 
+    /* METHODS: */
     private void Start()
     {
         // Binding Fields:
@@ -46,5 +50,24 @@ public class EnemyHealth : MonoBehaviour
         if (_isDead) return;
         _animator.SetTrigger(DieZombie);
         _isDead = true;
+        
+        GetComponent<EnemyAudio>().PlayDeathSfx();
+        
+        // Silencing active sounds:
+        try
+        {
+            GameObject child = transform.Find("AUDIO_Cancel on death").gameObject;
+            child.GetComponent<AudioSource>().enabled = false;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            // throw;
+        }
+    }
+    
+    public void OnCollapse(AnimationEvent animationEvent)
+    {
+        GetComponent<EnemyAudio>().PlayCollapseSfx();
     }
 }

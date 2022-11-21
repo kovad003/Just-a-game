@@ -5,35 +5,62 @@ using UnityEngine;
 /// </summary>
 public class PlayerLocomotion : MonoBehaviour
 {
-    private Rigidbody _playerRb;
-    private Animator _animator;
-    private Vector2 _input;
-    
-    [Header("Ground Sampling")]
+    /* EXPOSED FIELDS: */
+    [Header("GROUND DETECTION: ")]
     [SerializeField] private float rayCastsMaxRange = 1.1f;
     [SerializeField] private LayerMask layerMask;
     
-    /* Animator Param References: */
+    [Header("AUDIO: ")]
+    public AudioClip[] footstepAudioClips;
+    public AudioClip landingAudioClip;
+    [Range(0, 1)] [SerializeField] private float footstepAudioVolume = 0.5f;
+
+    /* HIDDEN FIELDS: */
+    private AudioSource _audioPlayer;
+    private Rigidbody _playerRb;
+    private Animator _animator;
+    private Vector2 _input;
+
+    // Animator Hash:
     private static readonly int InputX = Animator.StringToHash("input_X");
     private static readonly int InputY = Animator.StringToHash("input_Y");
     private static readonly int Falling = Animator.StringToHash("Falling");
     private static readonly int HasHitGround = Animator.StringToHash("hasHitGround");
     private static readonly int IsInAir = Animator.StringToHash("isInAir");
-
-    // Start is called before the first frame update
+    
+    /* METHODS: */
     private void Start()
     {
         _animator = GetComponent<Animator>();
         _playerRb = GetComponent<Rigidbody>();
+        
+        _audioPlayer = GetComponent<AudioSource>();
     }
-
-    // Update is called once per frame
+    
     private void Update()
     {
         HandlingInput();
         SampleGround();
     }
 
+    /// Method is invoked on landing event. The event is attached to the animation inside the editor.
+    public void OnFootStep(AnimationEvent animationEvent)
+    {
+        if (!(animationEvent.animatorClipInfo.weight > 0.5f)) return;
+        if (footstepAudioClips.Length <= 0) return;
+        var index = Random.Range(0, footstepAudioClips.Length);
+        AudioSource.PlayClipAtPoint(footstepAudioClips[index], transform.TransformPoint(_playerRb.centerOfMass), footstepAudioVolume);
+    }
+    
+    /// Method is invoked on landing event. The event is attached to the animation inside the editor.
+    public void OnLanding(AnimationEvent animationEvent)
+    {
+        if (!(animationEvent.animatorClipInfo.weight > 0.5f)) return;
+        Debug.Log("OnLand");
+        AudioSource.PlayClipAtPoint(landingAudioClip, transform.TransformPoint(_playerRb.centerOfMass), footstepAudioVolume);
+    }
+
+    /// Method processes the user's input.
     private void HandlingInput()
     {
         _input.x = Input.GetAxis("Horizontal");

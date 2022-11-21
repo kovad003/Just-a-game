@@ -4,13 +4,21 @@ using UnityEngine.Animations.Rigging;
 
 public class RigHandler : MonoBehaviour
 {
+    /* EXPOSED FIELDS */
+    [Header("PLAYER: ")]
+    [Tooltip("A collective folder for rig layers on the Player object.")]
     [SerializeField] private GameObject rigLayers;
-    [SerializeField] private float enableRigAfterSeconds;
-    [SerializeField] private float disableRigAfterSeconds;
     [SerializeField] private Rig aimLayer;
     [SerializeField] private TwoBoneIKConstraint leftHandIK;
-    [SerializeField] private float leftArmTurningPoint = 0.2f;
     
+    [Header("HOLSTERING GUN: ")]
+    [SerializeField] [Range(0.1f, 4.0f)] private float enableRigAfterSeconds = 2;
+    [SerializeField] [Range(0.1f, 2.0f)]private float disableRigAfterSeconds = 0.4f;
+    
+    [Header("RELOADING GUN: ")]
+    [SerializeField] [Range(0.1f, 1.0f)]private float reloadArmTurningPoint = 0.2f;
+    
+    /* HIDDEN FIELDS */
     private RigBuilder _rigBuilder;
     private bool _isReloading;
     private float _reloadDuration;
@@ -46,7 +54,7 @@ public class RigHandler : MonoBehaviour
         if (isReloading)
         {
             leftHandIK.weight -= Time.deltaTime / duration;
-            if (leftHandIK.weight <= leftArmTurningPoint)
+            if (leftHandIK.weight <= reloadArmTurningPoint)
                 _isReloading = false;
         }
         else

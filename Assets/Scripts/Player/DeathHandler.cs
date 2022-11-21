@@ -5,15 +5,21 @@ using UnityEngine;
 /// </summary>
 public class DeathHandler : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
+    [Header("CANVAS: ")]
     [SerializeField] private Canvas gameOverCanvas;
-    /* Animator */
+    
+    /* HIDDEN FIELDS: */
+    // Animator Hash
     private static readonly int Die = Animator.StringToHash("Die");
     
+    /* METHODS: */
     private void Start()
     {
         gameOverCanvas.enabled = false;
     }
-
+    
+    /// Method is called on player's death. Enables the Game Over canvas.
     public void HandleDeath()
     {
         gameOverCanvas.enabled = true;
