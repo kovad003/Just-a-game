@@ -7,20 +7,22 @@ using UnityEngine.AI;
 /// </summary>
 public class EnemyAI : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
     [SerializeField] private Transform pointOfInterest;
     [SerializeField] private Transform self;
     [SerializeField] private Transform target;
-    [SerializeField] private float chaseRadius = 5.0f;
-    [SerializeField] private float distanceToSafeZone = 10.0f;
-    [SerializeField] private float turnSpeed = 5.0f;
+    [SerializeField] [Range(0.0f, 30.0f)] private float chaseRadius = 10.0f;
+    [SerializeField] [Range(0.0f, 10.0f)] private float turnSpeed = 5.0f;
+   
+    /* HIDDEN FIELDS */
     private NavMeshAgent _navMeshAgent;
-    private float _distanceToTarget = Mathf.Infinity;
+    private EnemyAudio _enemyAudio;
     private Animator _animator;
     private EnemyHealth _enemyHealth;
+    private float _distanceToTarget = Mathf.Infinity;
     private bool _isProvoked;
-    private EnemyAudio _enemyAudio;
     
-    /* Animator */
+    // Animator Hash
     private static readonly int IsIdle = Animator.StringToHash("IsIdle");
     private static readonly int Move = Animator.StringToHash("Move");
     private static readonly int Attack = Animator.StringToHash("Attack");
@@ -63,14 +65,14 @@ public class EnemyAI : MonoBehaviour
     private void EngageTarget()
     {
         // FaceTarget();
-        if (_distanceToTarget >= distanceToSafeZone)
+        if (_distanceToTarget >= chaseRadius)
         {
             StayIdle();
             _enemyAudio.PlayIdleSfx();
         }
 
         /*_distanceToTarget >= _navMeshAgent.stoppingDistance && */
-        if (_distanceToTarget < distanceToSafeZone || _isProvoked)
+        if (_distanceToTarget < chaseRadius || _isProvoked)
         {
             FaceTarget();
             ChaseTarget();
@@ -135,12 +137,5 @@ public class EnemyAI : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         // Continue:
         _isProvoked = false;
-    }
-    
-    /// For debugging only. Will draw a wire sphere representing the chase radius of the enemy.
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, chaseRadius);
     }
 }

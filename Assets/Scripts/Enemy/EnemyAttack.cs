@@ -5,7 +5,10 @@ using UnityEngine;
 /// </summary>
 public class EnemyAttack : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
     [SerializeField] private float damage = 40.0f;
+    
+    /* HIDDEN FIELDS: */
     private PlayerHealth _target;
     
     private void Start()

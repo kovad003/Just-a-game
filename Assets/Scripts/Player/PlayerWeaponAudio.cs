@@ -2,11 +2,15 @@ using UnityEngine;
 
 public class PlayerWeaponAudio : MonoBehaviour
 {
-    private AudioSource _audioPlayer;
-
+    /* EXPOSED FIELDS */
+    [Header("AUDIO CLIPS: ")]
+    [Tooltip("Drag audio clips here.")]
     public AudioClip fireAudioClip; 
     public AudioClip reloadAudioClip;
     public AudioClip emptyClipAudioClip;
+    
+    /* HIDDEN FIELDS */
+    private AudioSource _audioPlayer;
     
     private void Start()
     {
@@ -20,5 +24,6 @@ public class PlayerWeaponAudio : MonoBehaviour
     public void PlayReloadSfx() { _audioPlayer.PlayOneShot(reloadAudioClip);
     }
     
+    /// Method plays a clicking sound effect when called. The "one shot" member enables sound overlapping.
     public void PlayEmptyClipSfx() { _audioPlayer.PlayOneShot(emptyClipAudioClip); }
 }

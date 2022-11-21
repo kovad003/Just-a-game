@@ -1,36 +1,50 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 /// <summary>
 /// AUTHOR: @Daniel K.
 /// </summary>
 public class PlayerWeapon : MonoBehaviour
 {
-    [SerializeField] private float rateOfFire = 0.3f;
+    /* EXPOSED FIELDS */
+    [Header("GENERAL: ")]
+    [SerializeField] [Range(0.1f, 1.0f)] private float rateOfFire = 0.3f;
     [SerializeField] private float weaponRange = 200.0f;
-    [SerializeField] private Transform weaponBarrel;
-    [SerializeField] private float damageCaused;
-    [SerializeField] private ParticleSystem muzzleFlash;
-    [SerializeField] private GameObject hitEffect;
-    [SerializeField] private Animator playersAnimator;
-    [SerializeField] private Transform aimingRef;
+    [SerializeField] [Range(8f, 16f)] private float recoilModifier = 8f;
+    [SerializeField] private float damageCaused = 10f;
+    [SerializeField] private float reloadDuration = 0.6f;
     [SerializeField] private Ammo ammoSlot;
     [SerializeField] private AmmoType ammoType;
-    [SerializeField] private float reloadDuration = 0.6f;
+    [SerializeField] private Magazine magazine;
 
+    [Header("EFFECTS: ")]
+    [SerializeField] private Transform weaponBarrel;
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject hitEffect;
+    
+    [Header("PLAYER: ")]
+    [Tooltip("Drag the Player Object here.")]
+    [SerializeField] private Animator playersAnimator;
+    [Tooltip("Should be under MainCam")]
+    [SerializeField] private Transform aimingRef;
+    
+    /* HIDDEN FIELDS */
+    private Animator _weaponsAnimator;
     private PlayerWeaponAudio _playerWeaponAudio;
     private RigHandler _rigHandler;
     private float _timeOfLastShot;
     private bool _isBeingReloaded;
 
-    /* Animator Param References - Player Character's Animator!: */
+    // Animator Hash (Player):
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int IsAiming = Animator.StringToHash("isAiming");
+    // Animator Hash (Weapon):
+    private static readonly int Fire = Animator.StringToHash("Fire");
 
-    [SerializeField] private Magazine magazine;
-    [Serializable]
-    private class Magazine
+    /* INNER CLASS */
+    [Serializable] private class Magazine
     {
         public int magSize = 12;
         public int ammoAmountInMag = 0;
@@ -42,6 +56,7 @@ public class PlayerWeapon : MonoBehaviour
         _timeOfLastShot = Time.time;
         _rigHandler = FindObjectOfType<RigHandler>();
         _playerWeaponAudio = GetComponent<PlayerWeaponAudio>();
+        _weaponsAnimator = GetComponent<Animator>();
     }
 
     // Update is enough for scanning user input.
@@ -80,7 +95,9 @@ public class PlayerWeapon : MonoBehaviour
     private void FetchAmmo()
     {
         var totalAmmo = ammoSlot.GetTotalAmmo(ammoType);
-        while ((magazine.ammoAmountInMag < totalAmmo) && totalAmmo > 0 && magazine.ammoAmountInMag < magazine.magSize)
+        while ((magazine.ammoAmountInMag < totalAmmo) 
+               && magazine.ammoAmountInMag < magazine.magSize 
+               && totalAmmo > 0)
         {
             ammoSlot.ReduceTotalAmmo(ammoType);
             magazine.ammoAmountInMag++;
@@ -107,7 +124,7 @@ public class PlayerWeapon : MonoBehaviour
         if (magazine.ammoAmountInMag > 0)
         {
             ProcessBulletHit();
-            PlayMuzzleFlash();
+            StartCoroutine(ProcessFxs());
             _playerWeaponAudio.PlayFireSfx();
             magazine.ammoAmountInMag--;
             StartCoroutine(ProcessRecoil());
@@ -116,10 +133,13 @@ public class PlayerWeapon : MonoBehaviour
             _playerWeaponAudio.PlayEmptyClipSfx();
     }
 
-     /// Method Generates muzzle flash after each shot.
-     private void PlayMuzzleFlash()
+     /// Method Generates muzzle flash and plays the weapon slide animation after each shot.
+     private IEnumerator ProcessFxs()
      {
          muzzleFlash.Play();
+         _weaponsAnimator.SetTrigger(Fire);
+         yield return new WaitForSeconds(0.1f);
+         _weaponsAnimator.ResetTrigger(Fire);
      }
 
      /// Method generates recoil after each shot. A coroutine is used to generate upward and downward amplitude.
@@ -127,11 +147,11 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Before Yield:
         var aimAt = aimingRef.transform;
-        aimAt.position = RecoilUpward(aimAt.position, 8f * Time.fixedDeltaTime);
+        aimAt.position = RecoilUpward(aimAt.position, recoilModifier * Time.fixedDeltaTime);
         // Yield:
         yield return new WaitForSeconds(0.1f);
         // Continue:
-        aimAt.position = RecoilDownward(aimAt.position, 8f * Time.fixedDeltaTime);
+        aimAt.position = RecoilDownward(aimAt.position, recoilModifier * Time.fixedDeltaTime);
     }
 
      
@@ -144,11 +164,11 @@ public class PlayerWeapon : MonoBehaviour
      private IEnumerator ProcessMagReplacement()
      {
          // Before Yield:
-         _isBeingReloaded = true;
+         _isBeingReloaded = true; // Prevents reload overlapping.
          if (ammoSlot.GetTotalAmmo(ammoType) > 0)
              _rigHandler.EnableLeftHandIKUpdate(_isBeingReloaded, reloadDuration);
          // Yield:
-         // need 2x multiplier bc
+         // need 2x multiplier -> back and forth movement of arm
          yield return new WaitForSeconds(2*reloadDuration);
          // Continue:
          _isBeingReloaded = false;

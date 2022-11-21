@@ -5,28 +5,30 @@ using UnityEngine;
 /// </summary>
 public class PlayerLocomotion : MonoBehaviour
 {
-    private AudioSource _audioPlayer;
-    public AudioClip locomotionAudioClip;
-    public AudioClip[] footstepAudioClips;
-    public AudioClip landingAudioClip;
-    [Range(0, 1)] public float footstepAudioVolume = 0.5f;
-
-    private Rigidbody _playerRb;
-    private Animator _animator;
-    private Vector2 _input;
-    
-    [Header("Ground Sampling")]
+    /* EXPOSED FIELDS: */
+    [Header("GROUND DETECTION: ")]
     [SerializeField] private float rayCastsMaxRange = 1.1f;
     [SerializeField] private LayerMask layerMask;
     
-    /* Animator Param References: */
+    [Header("AUDIO: ")]
+    public AudioClip[] footstepAudioClips;
+    public AudioClip landingAudioClip;
+    [Range(0, 1)] [SerializeField] private float footstepAudioVolume = 0.5f;
+
+    /* HIDDEN FIELDS: */
+    private AudioSource _audioPlayer;
+    private Rigidbody _playerRb;
+    private Animator _animator;
+    private Vector2 _input;
+
+    // Animator Hash:
     private static readonly int InputX = Animator.StringToHash("input_X");
     private static readonly int InputY = Animator.StringToHash("input_Y");
     private static readonly int Falling = Animator.StringToHash("Falling");
     private static readonly int HasHitGround = Animator.StringToHash("hasHitGround");
     private static readonly int IsInAir = Animator.StringToHash("isInAir");
-
-    // Start is called before the first frame update
+    
+    /* METHODS: */
     private void Start()
     {
         _animator = GetComponent<Animator>();
@@ -34,8 +36,7 @@ public class PlayerLocomotion : MonoBehaviour
         
         _audioPlayer = GetComponent<AudioSource>();
     }
-
-    // Update is called once per frame
+    
     private void Update()
     {
         HandlingInput();

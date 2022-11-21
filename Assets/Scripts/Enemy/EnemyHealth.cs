@@ -7,14 +7,16 @@ using UnityEngine;
 /// </summary>
 public class EnemyHealth : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
     [SerializeField] private float hitPoints = 100.0f;
     private Animator _animator;
     private EnemyAI _enemyAI;
     private bool _isDead;
     
-    /* Animator Param References - Zombie animator! */
+    // Animator Hash
     private static readonly int DieZombie = Animator.StringToHash("Die");
 
+    /* METHODS: */
     private void Start()
     {
         // Binding Fields:

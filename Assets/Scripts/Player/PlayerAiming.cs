@@ -5,17 +5,19 @@ using UnityEngine;
 /// </summary>
 public class PlayerAiming : MonoBehaviour
 {
+    /* EXPOSED FIELDS: */
     [SerializeField] private float turnSpeed = 15.0f;
     [SerializeField] private float aimDuration = 0.3f;
     [SerializeField] private GameObject holsteredPistol;
 
+    /* HIDDEN FIELDS: */
     private Camera _mainCamera;
     private Transform _aimingRef;
     private RigHandler _rigHandler;
     private Animator _animator;
     private float _timeOfLastShot;
 
-    /* Animator Param References: */
+    // Animator Hash
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
     private static readonly int HolsterPistol = Animator.StringToHash("HolsterPistol");
     private static readonly int UnholsterPistol = Animator.StringToHash("UnholsterPistol");
