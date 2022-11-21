@@ -11,6 +11,7 @@ public class PlayerAiming : MonoBehaviour
     [SerializeField] private GameObject holsteredPistol;
 
     /* HIDDEN FIELDS: */
+    private PlayerWeapon _equipedPistol;
     private Camera _mainCamera;
     private Transform _aimingRef;
     private RigHandler _rigHandler;
@@ -34,6 +35,7 @@ public class PlayerAiming : MonoBehaviour
         // Binding Components:
         _rigHandler = GetComponent<RigHandler>();
         _animator = GetComponent<Animator>();
+        _equipedPistol = FindObjectOfType<PlayerWeapon>();
     }
 
     // FixedUpdate() must be used bc player has physics and rigidbody.
@@ -87,6 +89,8 @@ public class PlayerAiming : MonoBehaviour
     {
         // Condition:
         if (!Input.GetKeyUp(key)) return;
+        if (_equipedPistol.isBeingReloaded) return;
+        
         if (_animator.GetBool(IsPistolHolstered) == false)
         {
             _animator.SetTrigger(HolsterPistol);

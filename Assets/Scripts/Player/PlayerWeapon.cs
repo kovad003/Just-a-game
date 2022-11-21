@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 public class PlayerWeapon : MonoBehaviour
 {
     /* EXPOSED FIELDS */
-    [Header("GENERAL: ")]
+    [Header("WEAPON: ")]
     [SerializeField] [Range(0.1f, 1.0f)] private float rateOfFire = 0.3f;
     [SerializeField] private float weaponRange = 200.0f;
     [SerializeField] [Range(8f, 16f)] private float recoilModifier = 8f;
@@ -19,6 +19,7 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Ammo ammoSlot;
     [SerializeField] private AmmoType ammoType;
     [SerializeField] private Magazine magazine;
+    public bool isBeingReloaded;
 
     [Header("EFFECTS: ")]
     [SerializeField] private Transform weaponBarrel;
@@ -39,7 +40,7 @@ public class PlayerWeapon : MonoBehaviour
     private PlayerWeaponAudio _playerWeaponAudio;
     private RigHandler _rigHandler;
     private float _timeOfLastShot;
-    private bool _isBeingReloaded;
+    
 
     // Animator Hash (Player):
     private static readonly int IsPistolHolstered = Animator.StringToHash("isPistolHolstered");
@@ -96,7 +97,7 @@ public class PlayerWeapon : MonoBehaviour
     {
         // Conditions:
         if (!Input.GetKeyUp(key)) return;
-        if (_isBeingReloaded) return; // While reloading another process cannot be initiated!
+        if (isBeingReloaded) return; // While reloading another process cannot be initiated!
         
         // FX and Animations:
         _playerWeaponAudio.PlayReloadSfx();
@@ -123,7 +124,7 @@ public class PlayerWeapon : MonoBehaviour
         if (isGunHolstered) return;
         if (!isAiming) return;
         if (FeedingNextBulletIntoBarrel()) return;
-        if (_isBeingReloaded) return;
+        if (isBeingReloaded) return;
 
         if (magazine.ammoAmountInMag > 0)
         {
@@ -197,14 +198,14 @@ public class PlayerWeapon : MonoBehaviour
      private IEnumerator MagExchangeRoutine()
      {
          // Before Yield:
-         _isBeingReloaded = true; // Prevents reload overlapping.
+         isBeingReloaded = true; // Prevents reload overlapping.
          if (ammoSlot.GetTotalAmmo(ammoType) > 0)
-             _rigHandler.EnableLeftHandIKUpdate(_isBeingReloaded, reloadDuration);
+             _rigHandler.EnableLeftHandIKUpdate(isBeingReloaded, reloadDuration);
          // Yield:
          // need 2x multiplier -> back and forth movement of arm
          yield return new WaitForSeconds(2*reloadDuration);
          // Continue:
-         _isBeingReloaded = false;
+         isBeingReloaded = false;
      }
      
     /// Method generates upward weapon recoil when player is shooting.
