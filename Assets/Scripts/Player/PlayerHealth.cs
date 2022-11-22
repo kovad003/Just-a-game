@@ -16,9 +16,9 @@ public class PlayerHealth : MonoBehaviour
     
     /* HIDDEN FIELDS: */
     private PlayerDisplayDamage _playerDisplayDamage;
+    private static readonly int Die1 = Animator.StringToHash("Die");
 
     /* METHODS: */
-
     private void Start()
     {
         _playerDisplayDamage = GetComponent<PlayerDisplayDamage>();
@@ -40,8 +40,15 @@ public class PlayerHealth : MonoBehaviour
     {
         hitPoints -= damage;
         if (hitPoints <= 0.0f)
+        {
+            hitPoints = 0.0f;
             GetComponent<DeathHandler>().HandleDeath();
-        
+        }
         _playerDisplayDamage.ShowPlayerDamage();
+    }
+
+    private void Die()
+    {
+        GetComponent<DeathHandler>().HandleDeath();
     }
 }

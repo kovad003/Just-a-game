@@ -6791,7 +6791,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5505140614637689874}
   m_LocalRotation: {x: 0.000000021855694, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.69, z: 0}
   m_LocalScale: {x: 0.95, y: 0.95, z: 0.95}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8257,15 +8257,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0b3d0e32e422b54da7f347ab42a7bc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rayCastsMaxRange: 1.1
+  rayCastsMaxRange: 2
   layerMask:
     serializedVersion: 2
     m_Bits: 8
   footstepAudioClips:
-  - {fileID: 8300000, guid: 4d11813f5983ce047873c94858e6a6c1, type: 3}
-  - {fileID: 8300000, guid: 6154d2d90f91ac743a30a16a58f9fa32, type: 3}
-  - {fileID: 8300000, guid: 4544cd1f9b0d00a498e3602ecfffcacc, type: 3}
-  - {fileID: 8300000, guid: 2921c47b0bdded540b5b813c1e60001c, type: 3}
+  - {fileID: 8300000, guid: eec53751c4e79a7469fc34e774360128, type: 3}
+  - {fileID: 8300000, guid: dbe4405baeea2404ba3d422430b5fd3b, type: 3}
+  - {fileID: 8300000, guid: c8657061120b2da4fb645654b16201f6, type: 3}
+  - {fileID: 8300000, guid: 8ff53086d637af8478c1408b78b3dd05, type: 3}
+  - {fileID: 8300000, guid: b662731f964d624449b092d4198147de, type: 3}
   landingAudioClip: {fileID: 8300000, guid: 622f42e8d781b8a44b119174e4ed9708, type: 3}
   footstepAudioVolume: 0.5
 --- !u!114 &6601522283813523448

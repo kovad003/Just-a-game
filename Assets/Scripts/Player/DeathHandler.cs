@@ -22,11 +22,15 @@ public class DeathHandler : MonoBehaviour
     /// Method is called on player's death. Enables the Game Over canvas.
     public void HandleDeath()
     {
+        Invoke(nameof(EnablePlayerControl), 2.0f);
+        GetComponent<Animator>().SetTrigger(Die);
+    }
+
+    private void EnablePlayerControl()
+    {
         gameOverCanvas.enabled = true;
         Time.timeScale = 0;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.None;
-        
-        GetComponent<Animator>().SetTrigger(Die);
     }
 }
