@@ -8,11 +8,13 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour
 {
     /* EXPOSED FIELDS: */
-    [SerializeField] private Transform pointOfInterest;
+    // [SerializeField] private Transform pointOfInterest;
     [SerializeField] private Transform self;
     [SerializeField] private Transform target;
     [SerializeField] [Range(0.0f, 30.0f)] private float chaseRadius = 10.0f;
     [SerializeField] [Range(0.0f, 10.0f)] private float turnSpeed = 5.0f;
+    [SerializeField] [Range(0.0f, 20.0f)] private float coolDownDuration = 8.0f;
+        
    
     /* HIDDEN FIELDS */
     private NavMeshAgent _navMeshAgent;
@@ -134,7 +136,7 @@ public class EnemyAI : MonoBehaviour
     {
         // Before Yield:
         _isProvoked = true;
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(coolDownDuration);
         // Continue:
         _isProvoked = false;
     }
