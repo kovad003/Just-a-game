@@ -20,6 +20,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MainMenu/MenuAsuna.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MainMenu/MenuWeapon.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player/PlayerWeaponAudio.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/WinTrigger.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -93,7 +94,10 @@
       <workItem from="1669025062386" duration="588000" />
       <workItem from="1669026408109" duration="12437000" />
       <workItem from="1669047924132" duration="15109000" />
-      <workItem from="1669105751585" duration="2926000" />
+      <workItem from="1669105751585" duration="5676000" />
+      <workItem from="1669113465753" duration="987000" />
+      <workItem from="1669309364855" duration="1178000" />
+      <workItem from="1669322904788" duration="1301000" />
     </task>
     <servers />
   </component>
